@@ -3,7 +3,7 @@ const T = {
     skip: 'Skip to content', shop: 'Shop', cart: 'Cart', otherLang: 'ES', otherLangName: 'Ver en español',
     intro: 'New retro-style soccer jerseys, chosen for the players, goals and eras people still remember.',
     shopAll: 'Shop the collection', viewAll: 'View all', collection: 'The collection',
-    photoSoon: 'Photo coming soon', regular: 'Regular price', sale: 'Sale price', save: (n) => `$${n} off`,
+    statement: ['We don’t sell jerseys.', 'We archive memories.'], regular: 'Regular price', sale: 'Sale price', save: (n) => `$${n} off`,
     back: 'Back to the collection', size: 'Size', soldOutSize: 'sold out', add: 'Add to cart', soldOut: 'Sold out',
     pickSize: 'Please select a size.', added: 'Added to your cart.', viewCart: 'View cart',
     limit: 'You already have all our stock in this size.',
@@ -20,7 +20,7 @@ const T = {
     skip: 'Ir al contenido', shop: 'Tienda', cart: 'Carrito', otherLang: 'EN', otherLangName: 'View in English',
     intro: 'Camisolas de fútbol nuevas de estilo retro, elegidas por los jugadores, los goles y las épocas que seguimos recordando.',
     shopAll: 'Ver la colección', viewAll: 'Ver todas', collection: 'La colección',
-    photoSoon: 'Foto próximamente', regular: 'Precio regular', sale: 'Precio de oferta', save: (n) => `$${n} de descuento`,
+    statement: ['No vendemos camisetas.', 'Archivamos recuerdos.'], regular: 'Precio regular', sale: 'Precio de oferta', save: (n) => `$${n} de descuento`,
     back: 'Volver a la colección', size: 'Talla', soldOutSize: 'agotada', add: 'Agregar al carrito', soldOut: 'Agotada',
     pickSize: 'Seleccioná una talla.', added: 'Agregada al carrito.', viewCart: 'Ver carrito',
     limit: 'Ya tenés todo nuestro inventario en esta talla.',
@@ -85,21 +85,25 @@ function reconcileCart() {
   saveCart();
 }
 
-function jerseySvg(p) {
-  const collar = '<path class="jersey-collar" d="M70 20 C80 40 120 40 130 20"/>';
-  const shape = p.longSleeve
-    ? 'M70 20 C80 32 120 32 130 20 L165 38 L188 180 L165 184 L148 85 L148 205 L52 205 L52 85 L35 184 L12 180 L35 38 Z'
-    : 'M70 20 C80 32 120 32 130 20 L165 38 L190 85 L160 100 L148 78 L148 205 L52 205 L52 78 L40 100 L10 85 L35 38 Z';
-  const print = p.number
-    ? `<text class="jersey-name" x="100" y="78">${esc(p.player.toUpperCase())}</text>
-       <text class="jersey-number" x="100" y="140">${esc(p.number)}</text>`
-    : '<text class="jersey-mark" x="100" y="118">90:00</text>';
-  return `<svg viewBox="0 0 200 220" aria-hidden="true"><path class="jersey-shape" d="${shape}"/>${collar}${print}</svg>`;
+const archiveNumber = (p) => String(products.indexOf(p) + 1).padStart(3, '0');
+
+function archiveTag(p) {
+  const player = playerLine(p);
+  return `<div class="tag" aria-hidden="true">
+    <span class="tag-eyebrow">Archive ${archiveNumber(p)}</span>
+    <span class="tag-team">${esc(p.team)}</span>
+    <span class="tag-rule"></span>
+    ${player ? `<span class="tag-player">${esc(player)}</span>` : ''}
+    <span class="tag-mark">90:00</span>
+  </div>`;
 }
 
 function visual(p) {
-  if (p.images[0]) return `<div class="plate"><img src="${esc(p.images[0])}" alt="${esc(p.team)}"></div>`;
-  return `<div class="plate">${jerseySvg(p)}<span class="pending">${esc(t().photoSoon)}</span></div>`;
+  if (p.images[0]) {
+    const alt = [p.team, playerLine(p), p.title].filter(Boolean).join(', ');
+    return `<div class="plate has-photo"><img src="${esc(p.images[0])}" alt="${esc(alt)}" width="1122" height="1402" loading="lazy"></div>`;
+  }
+  return `<div class="plate">${archiveTag(p)}</div>`;
 }
 
 function priceLine(p) {
@@ -138,7 +142,7 @@ function renderHome() {
   document.title = '90:00 Archive';
   main.innerHTML = `
     <section class="hero">
-      <h1><img src="/assets/logo.webp" alt="90:00 Archive" width="1254" height="627"></h1>
+      <h1><img src="/assets/logo-ivory.png" alt="90:00 Archive" width="874" height="384"></h1>
       <p class="tagline" lang="en">${esc(TAGLINE)}</p>
       <p class="intro">${esc(t().intro)}</p>
       <a class="button" href="/shop" data-link>${esc(t().shopAll)}</a>
@@ -146,6 +150,11 @@ function renderHome() {
     <section class="section">
       <div class="section-head"><h2>${esc(t().collection)}</h2><a href="/shop" data-link>${esc(t().viewAll)}</a></div>
       <div class="grid">${products.slice(0, 3).map((p) => card(p)).join('')}</div>
+    </section>
+    <section class="statement">
+      <p>${t().statement.map(esc).join('<br>')}</p>
+      <div class="rule"></div>
+      <b>90:00</b>
     </section>`;
 }
 
@@ -169,6 +178,7 @@ function renderProduct(p) {
     <div>${visual(p)}</div>
     <div>
       <a class="back" href="/shop" data-link>← ${esc(t().back)}</a>
+      <p class="collection-name">${esc(p.title)}</p>
       <h1>${esc(p.team)}</h1>
       ${p.player ? `<p class="player">${esc(playerLine(p))}</p>` : ''}
       ${priceLine(p)}
@@ -219,7 +229,7 @@ function renderCart() {
     <div class="summary">
       <div class="summary-row"><span>${esc(t().shipping)}</span><span>${esc(freeShipping ? t().shipFree : t().shipLater)}</span></div>
       <div class="summary-row total"><span>${esc(t().subtotal)}</span><span>$${subtotal}</span></div>
-      ${freeShipping ? '' : `<p class="fine" style="text-align:left">${esc(t().oneMore)}</p>`}
+      ${freeShipping ? '' : `<p class="fine nudge">${esc(t().oneMore)}</p>`}
       <button class="button" type="button" disabled>${esc(t().checkout)}</button>
       <p class="fine">${esc(t().checkoutSoon)}</p>
     </div>

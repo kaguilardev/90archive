@@ -42,6 +42,7 @@ Everything is in `data/products.json`:
 ## Decisions so far
 
 - Price: $90 list, $10 off, $80 to the customer. Free shipping on 2 or more jerseys.
+- Look: black background with warm sand archive cards and a small gold accent, based on the brand inspiration images.
 - Shopify was ruled out. The site is custom and planned for Render.
 - Don't describe jerseys as official, authentic, licensed or limited edition unless that has been verified.
 - Don't invent product facts. Show them only after checking them against the physical jersey.

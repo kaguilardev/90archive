@@ -1,74 +1,142 @@
 [
   {
     "slug": "juventus-del-piero",
+    "title": "Leyenda Bianconera",
     "team": "Juventus",
     "player": "Del Piero",
     "number": 10,
     "priceUsd": 90,
     "discountUsd": 10,
-    "stock": { "M": 1, "L": 1, "XL": 0 },
-    "longSleeve": false,
-    "notes": { "en": [], "es": [] },
-    "images": []
+    "stock": {
+      "M": 1,
+      "L": 1,
+      "XL": 0
+    },
+    "notes": {
+      "en": [],
+      "es": []
+    },
+    "images": [
+      "/assets/jerseys/juventus-del-piero.webp"
+    ]
   },
   {
     "slug": "bayern-munchen",
+    "title": "Orgullo Bávaro",
     "team": "Bayern München",
     "player": null,
     "number": null,
     "priceUsd": 90,
     "discountUsd": 10,
-    "stock": { "M": 0, "L": 1, "XL": 1 },
-    "longSleeve": false,
-    "notes": { "en": ["No back number"], "es": ["Sin dorsal"] },
-    "images": []
+    "stock": {
+      "M": 0,
+      "L": 1,
+      "XL": 1
+    },
+    "notes": {
+      "en": [
+        "No back number"
+      ],
+      "es": [
+        "Sin dorsal"
+      ]
+    },
+    "images": [
+      "/assets/jerseys/bayern-munchen.webp"
+    ]
   },
   {
     "slug": "arsenal-henry",
+    "title": "El 14 de Highbury",
     "team": "Arsenal",
     "player": "Henry",
     "number": 14,
     "priceUsd": 90,
     "discountUsd": 10,
-    "stock": { "M": 1, "L": 1, "XL": 0 },
-    "longSleeve": false,
-    "notes": { "en": [], "es": [] },
-    "images": []
+    "stock": {
+      "M": 1,
+      "L": 1,
+      "XL": 0
+    },
+    "notes": {
+      "en": [],
+      "es": []
+    },
+    "images": [
+      "/assets/jerseys/arsenal-henry.webp"
+    ]
   },
   {
     "slug": "ac-milan-kaka",
+    "title": "El 22 Rossonero",
     "team": "AC Milan",
     "player": "Kaká",
     "number": 22,
     "priceUsd": 90,
     "discountUsd": 10,
-    "stock": { "M": 0, "L": 1, "XL": 1 },
-    "longSleeve": true,
-    "notes": { "en": ["Long sleeve", "No patch"], "es": ["Manga larga", "Sin parche"] },
-    "images": []
+    "stock": {
+      "M": 0,
+      "L": 1,
+      "XL": 1
+    },
+    "notes": {
+      "en": [
+        "Long sleeve",
+        "No patch"
+      ],
+      "es": [
+        "Manga larga",
+        "Sin parche"
+      ]
+    },
+    "images": [
+      "/assets/jerseys/ac-milan-kaka.webp"
+    ]
   },
   {
     "slug": "real-madrid-raul",
+    "title": "El 7 Blanco",
     "team": "Real Madrid",
     "player": "Raúl",
     "number": 7,
     "priceUsd": 90,
     "discountUsd": 10,
-    "stock": { "M": 1, "L": 1, "XL": 0 },
-    "longSleeve": false,
-    "notes": { "en": [], "es": [] },
-    "images": []
+    "stock": {
+      "M": 1,
+      "L": 1,
+      "XL": 0
+    },
+    "notes": {
+      "en": [],
+      "es": []
+    },
+    "images": [
+      "/assets/jerseys/real-madrid-raul.webp"
+    ]
   },
   {
     "slug": "barcelona",
+    "title": "Alma Blaugrana",
     "team": "Barcelona",
     "player": null,
     "number": null,
     "priceUsd": 90,
     "discountUsd": 10,
-    "stock": { "M": 0, "L": 1, "XL": 1 },
-    "longSleeve": false,
-    "notes": { "en": ["No back number"], "es": ["Sin dorsal"] },
-    "images": []
+    "stock": {
+      "M": 0,
+      "L": 1,
+      "XL": 1
+    },
+    "notes": {
+      "en": [
+        "No back number"
+      ],
+      "es": [
+        "Sin dorsal"
+      ]
+    },
+    "images": [
+      "/assets/jerseys/barcelona.webp"
+    ]
   }
 ]
