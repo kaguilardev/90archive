@@ -1,0 +1,74 @@
+[
+  {
+    "slug": "juventus-del-piero",
+    "team": "Juventus",
+    "player": "Del Piero",
+    "number": 10,
+    "priceUsd": 90,
+    "discountUsd": 10,
+    "stock": { "M": 1, "L": 1, "XL": 0 },
+    "longSleeve": false,
+    "notes": { "en": [], "es": [] },
+    "images": []
+  },
+  {
+    "slug": "bayern-munchen",
+    "team": "Bayern München",
+    "player": null,
+    "number": null,
+    "priceUsd": 90,
+    "discountUsd": 10,
+    "stock": { "M": 0, "L": 1, "XL": 1 },
+    "longSleeve": false,
+    "notes": { "en": ["No back number"], "es": ["Sin dorsal"] },
+    "images": []
+  },
+  {
+    "slug": "arsenal-henry",
+    "team": "Arsenal",
+    "player": "Henry",
+    "number": 14,
+    "priceUsd": 90,
+    "discountUsd": 10,
+    "stock": { "M": 1, "L": 1, "XL": 0 },
+    "longSleeve": false,
+    "notes": { "en": [], "es": [] },
+    "images": []
+  },
+  {
+    "slug": "ac-milan-kaka",
+    "team": "AC Milan",
+    "player": "Kaká",
+    "number": 22,
+    "priceUsd": 90,
+    "discountUsd": 10,
+    "stock": { "M": 0, "L": 1, "XL": 1 },
+    "longSleeve": true,
+    "notes": { "en": ["Long sleeve", "No patch"], "es": ["Manga larga", "Sin parche"] },
+    "images": []
+  },
+  {
+    "slug": "real-madrid-raul",
+    "team": "Real Madrid",
+    "player": "Raúl",
+    "number": 7,
+    "priceUsd": 90,
+    "discountUsd": 10,
+    "stock": { "M": 1, "L": 1, "XL": 0 },
+    "longSleeve": false,
+    "notes": { "en": [], "es": [] },
+    "images": []
+  },
+  {
+    "slug": "barcelona",
+    "team": "Barcelona",
+    "player": null,
+    "number": null,
+    "priceUsd": 90,
+    "discountUsd": 10,
+    "stock": { "M": 0, "L": 1, "XL": 1 },
+    "longSleeve": false,
+    "notes": { "en": ["No back number"], "es": ["Sin dorsal"] },
+    "images": []
+  }
+]
