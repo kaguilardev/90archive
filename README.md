@@ -1,6 +1,6 @@
 # 90:00 Archive
 
-Store for new retro-style soccer jerseys. Node and Express, with no front-end build step.
+Store for new retro-style football jerseys. Node and Express, with no front-end build step.
 
 ## Run it
 

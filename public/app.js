@@ -1,7 +1,7 @@
 const T = {
   en: {
     skip: 'Skip to content', shop: 'Shop', archive: 'The Archive', cart: 'Cart', otherLang: 'ES', otherLangName: 'Ver en español',
-    intro: 'New retro-style soccer jerseys, chosen for the players, goals and eras people still remember.',
+    intro: 'New retro-style football jerseys, chosen for the players, goals and eras people still remember.',
     shopAll: 'Shop the collection', viewAll: 'View all', collection: 'The collection',
     statement: ['We don’t sell jerseys.', 'We archive memories.'], regular: 'Regular price', sale: 'Sale price', save: (n) => `$${n} off`,
     back: 'Back to the collection', size: 'Size', soldOutSize: 'sold out', add: 'Add to cart', soldOut: 'Sold out',
