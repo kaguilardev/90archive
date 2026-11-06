@@ -15,7 +15,7 @@ app.get('/api/products', (_req, res) => res.json(products));
 app.use(express.static(publicDir, { index: false }));
 
 // Pages are drawn in the browser, so each real page URL returns the same HTML shell.
-app.get(/^\/(shop(\/[a-z0-9-]+)?|cart)?\/?$/, (_req, res) => res.sendFile(indexFile));
+app.get(/^\/(shop(\/[a-z0-9-]+)?|cart|archive)?\/?$/, (_req, res) => res.sendFile(indexFile));
 app.use((_req, res) => res.status(404).sendFile(indexFile));
 
 // Render provides PORT and requires listening on 0.0.0.0.

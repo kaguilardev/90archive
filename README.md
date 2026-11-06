@@ -25,7 +25,8 @@ Everything is in `data/products.json`:
 
 - `priceUsd` is the list price and `discountUsd` is the amount off. Customers pay the difference.
 - `stock` is the units per size. Current numbers come from the confirmed order, not a physical count.
-- `images` is a list of paths such as `/assets/jerseys/juventus-1.jpg`. Add files under `public/assets/`. The first image replaces the placeholder drawing.
+- `images` is a list of paths under `public/assets/`. The first image shows on cards and the second appears on hover.
+- `history` is the jersey's chapter in the Archive, in English and Spanish, and appears on its jersey page too. Check any new fact against a source and list it in `sources`. Each `photo` needs a credit and a license that allows use on this site.
 
 ## Before opening sales
 

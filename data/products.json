@@ -1,5 +1,112 @@
 [
   {
+    "slug": "barcelona",
+    "title": "Alma Blaugrana",
+    "team": "Barcelona",
+    "player": null,
+    "number": null,
+    "priceUsd": 90,
+    "discountUsd": 10,
+    "stock": {
+      "M": 0,
+      "L": 1,
+      "XL": 1
+    },
+    "notes": {
+      "en": [
+        "No back number"
+      ],
+      "es": [
+        "Sin dorsal"
+      ]
+    },
+    "images": [
+      "/assets/jerseys/barcelona-hanger.jpg",
+      "/assets/jerseys/barcelona-model.jpg",
+      "/assets/jerseys/barcelona-detail.jpg",
+      "/assets/jerseys/barcelona-2.jpg",
+      "/assets/jerseys/barcelona-3.jpg"
+    ],
+    "history": {
+      "years": "1992–95",
+      "headline": {
+        "en": "The years after Wembley",
+        "es": "Los años después de Wembley"
+      },
+      "story": {
+        "en": [
+          "For decades, the European Cup was the one trophy Barcelona could not win. Under Johan Cruyff, that finally changed.",
+          "This design looks back to the shirts of 1992 to 1995, the seasons that followed that night at Wembley, when Barça took the field as champions of Europe for the first time."
+        ],
+        "es": [
+          "Durante décadas, la Copa de Europa fue el trofeo que el Barcelona no podía ganar. Con Johan Cruyff, por fin cambió la historia.",
+          "Este diseño mira a las camisolas de 1992 a 1995, las temporadas que siguieron a aquella noche en Wembley, cuando el Barça salió a la cancha por primera vez como campeón de Europa."
+        ]
+      },
+      "moment": {
+        "date": {
+          "en": "20 May 1992 · Wembley, London",
+          "es": "20 de mayo de 1992 · Wembley, Londres"
+        },
+        "title": {
+          "en": "Koeman’s free kick",
+          "es": "El tiro libre de Koeman"
+        },
+        "text": {
+          "en": "Extra time against Sampdoria, still 0–0. In the 112th minute, Ronald Koeman struck a free kick that won the match 1–0 and gave Barcelona its first European Cup.",
+          "es": "Tiempo extra contra la Sampdoria, todavía 0–0. En el minuto 112, Ronald Koeman cobró el tiro libre que selló el 1–0 y le dio al Barcelona su primera Copa de Europa."
+        },
+        "query": "Koeman free kick Barcelona Sampdoria 1992 European Cup final"
+      },
+      "stats": [
+        {
+          "value": "1st",
+          "label": {
+            "en": "European Cup in club history",
+            "es": "Copa de Europa del club"
+          }
+        },
+        {
+          "value": "112′",
+          "label": {
+            "en": "Minute of the winning goal",
+            "es": "Minuto del gol del triunfo"
+          }
+        },
+        {
+          "value": "1–0",
+          "label": {
+            "en": "Final score at Wembley",
+            "es": "Marcador final en Wembley"
+          }
+        }
+      ],
+      "photo": {
+        "src": "/assets/history/barcelona.jpg",
+        "w": 1000,
+        "h": 663,
+        "alt": {
+          "en": "Johan Cruyff riding a bicycle in 1994",
+          "es": "Johan Cruyff en bicicleta en 1994"
+        },
+        "caption": {
+          "en": "Johan Cruyff, then Barcelona’s coach, in August 1994.",
+          "es": "Johan Cruyff, entonces técnico del Barcelona, en agosto de 1994."
+        },
+        "credit": "Dan Uneken",
+        "license": "CC0",
+        "page": "https://commons.wikimedia.org/wiki/File:Johan_Cruijff_(Cruyff).jpg",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+      },
+      "sources": [
+        {
+          "label": "1992 European Cup final",
+          "url": "https://en.wikipedia.org/wiki/1992_European_Cup_final"
+        }
+      ]
+    }
+  },
+  {
     "slug": "juventus-del-piero",
     "title": "Leyenda Bianconera",
     "team": "Juventus",
@@ -17,8 +124,94 @@
       "es": []
     },
     "images": [
-      "/assets/jerseys/juventus-del-piero.webp"
-    ]
+      "/assets/jerseys/juventus-del-piero-hanger.jpg",
+      "/assets/jerseys/juventus-del-piero-model.jpg",
+      "/assets/jerseys/juventus-del-piero-detail.jpg",
+      "/assets/jerseys/juventus-del-piero-2.jpg",
+      "/assets/jerseys/juventus-del-piero-3.jpg"
+    ],
+    "history": {
+      "years": "1995–97",
+      "headline": {
+        "en": "The boy who inherited the 10",
+        "es": "El muchacho que heredó el 10"
+      },
+      "story": {
+        "en": [
+          "Alessandro Del Piero joined Juventus from Padova in 1993. For the 1995–96 season he took the number 10 from Roberto Baggio, a shirt Michel Platini had made famous before him.",
+          "He scored six Champions League goals that season as Juventus won the competition in Rome. Gianni Agnelli nicknamed him Pinturicchio, after the Renaissance painter. He stayed 19 seasons and left as the club’s all-time top scorer."
+        ],
+        "es": [
+          "Alessandro Del Piero llegó a la Juventus desde el Padova en 1993. Para la temporada 1995–96 tomó el número 10 de Roberto Baggio, una camisola que Michel Platini ya había hecho famosa.",
+          "Anotó seis goles en la Champions esa temporada, y la Juventus ganó el torneo en Roma. Gianni Agnelli lo apodó Pinturicchio, por el pintor renacentista. Se quedó 19 temporadas y se fue como máximo goleador en la historia del club."
+        ]
+      },
+      "moment": {
+        "date": {
+          "en": "26 November 1996 · Tokyo",
+          "es": "26 de noviembre de 1996 · Tokio"
+        },
+        "title": {
+          "en": "Champions of the world",
+          "es": "Campeones del mundo"
+        },
+        "text": {
+          "en": "The Intercontinental Cup against River Plate. Del Piero scored the only goal in the 81st minute and was named man of the match.",
+          "es": "La Copa Intercontinental contra River Plate. Del Piero anotó el único gol en el minuto 81 y fue elegido el mejor jugador del partido."
+        },
+        "query": "Del Piero goal Juventus River Plate 1996 Intercontinental Cup"
+      },
+      "stats": [
+        {
+          "value": "290",
+          "label": {
+            "en": "Goals, a Juventus record",
+            "es": "Goles, récord de la Juventus"
+          }
+        },
+        {
+          "value": "705",
+          "label": {
+            "en": "Appearances for the club",
+            "es": "Partidos con el club"
+          }
+        },
+        {
+          "value": "19",
+          "label": {
+            "en": "Seasons in Turin",
+            "es": "Temporadas en Turín"
+          }
+        }
+      ],
+      "photo": {
+        "src": "/assets/history/juventus-del-piero.jpg",
+        "w": 1000,
+        "h": 1481,
+        "alt": {
+          "en": "Del Piero smiling and holding the Champions League trophy, with Paulo Sousa beside him",
+          "es": "Del Piero sonriendo con el trofeo de la Champions, junto a Paulo Sousa"
+        },
+        "caption": {
+          "en": "Rome, 22 May 1996: Del Piero with the trophy, Paulo Sousa behind him.",
+          "es": "Roma, 22 de mayo de 1996: Del Piero con el trofeo y Paulo Sousa detrás."
+        },
+        "credit": "LaPresse",
+        "license": "Public domain",
+        "page": "https://commons.wikimedia.org/wiki/File:Juventus_FC_-_Champions_League_1995-96_-_Alessandro_Del_Piero_e_Paulo_Sousa.jpg",
+        "licenseUrl": null
+      },
+      "sources": [
+        {
+          "label": "Alessandro Del Piero",
+          "url": "https://en.wikipedia.org/wiki/Alessandro_Del_Piero"
+        },
+        {
+          "label": "1996 Intercontinental Cup",
+          "url": "https://en.wikipedia.org/wiki/1996_Intercontinental_Cup"
+        }
+      ]
+    }
   },
   {
     "slug": "bayern-munchen",
@@ -42,8 +235,205 @@
       ]
     },
     "images": [
-      "/assets/jerseys/bayern-munchen.webp"
-    ]
+      "/assets/jerseys/bayern-munchen-hanger.jpg",
+      "/assets/jerseys/bayern-munchen-model.jpg",
+      "/assets/jerseys/bayern-munchen-detail.jpg",
+      "/assets/jerseys/bayern-munchen-2.jpg",
+      "/assets/jerseys/bayern-munchen-3.jpg"
+    ],
+    "history": {
+      "years": "1997–99",
+      "headline": {
+        "en": "Ahead when the clock read 90:00",
+        "es": "Ganando cuando el reloj marcó 90:00"
+      },
+      "story": {
+        "en": [
+          "Opel was on Bayern’s chest from 1989 to 2002, and this navy and red design belongs to the late 1990s, a Bayern side one trophy away from the top of Europe.",
+          "No match explains the name 90:00 better than the one that defined this era. Bayern led the 1999 Champions League final for 85 minutes. The clock reached ninety, and the story was not over."
+        ],
+        "es": [
+          "Opel estuvo en el pecho del Bayern de 1989 a 2002, y este diseño azul marino y rojo pertenece al final de los años 90, un Bayern a un trofeo de la cima de Europa.",
+          "Ningún partido explica mejor el nombre 90:00 que el que definió esta época. El Bayern ganó la final de la Champions de 1999 durante 85 minutos. El reloj llegó a noventa, y la historia no había terminado."
+        ]
+      },
+      "moment": {
+        "date": {
+          "en": "26 May 1999 · Camp Nou, Barcelona",
+          "es": "26 de mayo de 1999 · Camp Nou, Barcelona"
+        },
+        "title": {
+          "en": "The three minutes",
+          "es": "Los tres minutos"
+        },
+        "text": {
+          "en": "Mario Basler put Bayern ahead in the 6th minute. Then, in stoppage time, Teddy Sheringham equalized and Ole Gunnar Solskjær scored the winner for Manchester United. Final score: 2–1, in front of 90,245 people.",
+          "es": "Mario Basler adelantó al Bayern en el minuto 6. Luego, en el tiempo de reposición, Teddy Sheringham empató y Ole Gunnar Solskjær anotó el gol del triunfo del Manchester United. Resultado final: 2–1, ante 90,245 personas."
+        },
+        "query": "Bayern Munich Manchester United 1999 Champions League final"
+      },
+      "stats": [
+        {
+          "value": "6′",
+          "label": {
+            "en": "Basler puts Bayern ahead",
+            "es": "Basler adelanta al Bayern"
+          }
+        },
+        {
+          "value": "90+3′",
+          "label": {
+            "en": "The winner against them",
+            "es": "El gol que lo cambió todo"
+          }
+        },
+        {
+          "value": "90,245",
+          "label": {
+            "en": "People at Camp Nou",
+            "es": "Personas en el Camp Nou"
+          }
+        }
+      ],
+      "photo": {
+        "src": "/assets/history/bayern-munchen.jpg",
+        "w": 1000,
+        "h": 706,
+        "alt": {
+          "en": "Manchester United and Bayern lined up on the Camp Nou pitch before the 1999 final",
+          "es": "El Manchester United y el Bayern formados en la cancha del Camp Nou antes de la final de 1999"
+        },
+        "caption": {
+          "en": "Camp Nou, 26 May 1999: the teams line up before the final, with Bayern in their change kit.",
+          "es": "Camp Nou, 26 de mayo de 1999: los equipos formados antes de la final, con el Bayern en su uniforme alterno."
+        },
+        "credit": "Seán Murray",
+        "license": "CC BY-SA 2.0",
+        "page": "https://commons.wikimedia.org/wiki/File:1999_UEFA_Champions_League_Final_teams_line_up.jpg",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/"
+      },
+      "sources": [
+        {
+          "label": "1999 Champions League final",
+          "url": "https://en.wikipedia.org/wiki/1999_UEFA_Champions_League_final"
+        },
+        {
+          "label": "Bayern shirt history",
+          "url": "https://casualfootballshirts.co.uk/pages/bayern-munich-shirt-history"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "real-madrid-raul",
+    "title": "El 7 Blanco",
+    "team": "Real Madrid",
+    "player": "Raúl",
+    "number": 7,
+    "priceUsd": 90,
+    "discountUsd": 10,
+    "stock": {
+      "M": 1,
+      "L": 1,
+      "XL": 0
+    },
+    "notes": {
+      "en": [],
+      "es": []
+    },
+    "images": [
+      "/assets/jerseys/real-madrid-raul-hanger.jpg",
+      "/assets/jerseys/real-madrid-raul-model.jpg",
+      "/assets/jerseys/real-madrid-raul-detail.jpg",
+      "/assets/jerseys/real-madrid-raul-2.jpg",
+      "/assets/jerseys/real-madrid-raul-3.jpg"
+    ],
+    "history": {
+      "years": "1998–2000",
+      "headline": {
+        "en": "The kid who became the 7",
+        "es": "El muchacho que se convirtió en el 7"
+      },
+      "story": {
+        "en": [
+          "Raúl González made his Real Madrid debut on 29 October 1994, away to Real Zaragoza, at just 17 years and 124 days old. From 1996 he wore the number 7, and he kept it until 2010.",
+          "This shirt belongs to his peak years. In Tokyo in December 1998 he scored the 83rd-minute winner against Vasco da Gama in the Intercontinental Cup. In 1998–99 he won the Pichichi as La Liga’s top scorer, with 25 goals."
+        ],
+        "es": [
+          "Raúl González debutó con el Real Madrid el 29 de octubre de 1994, de visita contra el Real Zaragoza, con apenas 17 años y 124 días. Desde 1996 usó el número 7, y lo conservó hasta 2010.",
+          "Esta camisola pertenece a sus mejores años. En Tokio, en diciembre de 1998, anotó en el minuto 83 el gol del triunfo contra el Vasco da Gama en la Copa Intercontinental. En 1998–99 ganó el Pichichi como máximo goleador de La Liga, con 25 goles."
+        ]
+      },
+      "moment": {
+        "date": {
+          "en": "24 May 2000 · Stade de France, Saint-Denis",
+          "es": "24 de mayo de 2000 · Stade de France, Saint-Denis"
+        },
+        "title": {
+          "en": "The run to the third",
+          "es": "La carrera hacia el tercero"
+        },
+        "text": {
+          "en": "Champions League final against Valencia. In the 75th minute a Valencia corner was cleared, Raúl broke away on the counterattack, rounded goalkeeper Santiago Cañizares and finished it: 3–0.",
+          "es": "Final de la Champions contra el Valencia. En el minuto 75 despejaron un tiro de esquina del Valencia, Raúl salió solo al contragolpe, se quitó al portero Santiago Cañizares y definió: 3–0."
+        },
+        "query": "Raúl goal Real Madrid Valencia 2000 Champions League final"
+      },
+      "stats": [
+        {
+          "value": "323",
+          "label": {
+            "en": "Goals for Real Madrid",
+            "es": "Goles con el Real Madrid"
+          }
+        },
+        {
+          "value": "741",
+          "label": {
+            "en": "Appearances for the club",
+            "es": "Partidos con el club"
+          }
+        },
+        {
+          "value": "3",
+          "label": {
+            "en": "Champions League titles",
+            "es": "Títulos de Champions"
+          }
+        }
+      ],
+      "photo": {
+        "src": "/assets/history/real-madrid-raul.jpg",
+        "w": 1000,
+        "h": 667,
+        "alt": {
+          "en": "Raúl in a white Real Madrid shirt celebrating with his hands raised",
+          "es": "Raúl con la camisola blanca del Real Madrid celebrando con las manos en alto"
+        },
+        "caption": {
+          "en": "Still the 7 a decade later: Raúl celebrates a Champions League goal in December 2008.",
+          "es": "Todavía el 7 una década después: Raúl celebra un gol de Champions en diciembre de 2008."
+        },
+        "credit": "Tsutomu Takasu",
+        "license": "CC BY 2.0",
+        "page": "https://commons.wikimedia.org/wiki/File:Ra%C3%BAl_Gonz%C3%A1lez_11dic2008.jpg",
+        "licenseUrl": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "sources": [
+        {
+          "label": "Raúl",
+          "url": "https://en.wikipedia.org/wiki/Ra%C3%BAl_(footballer)"
+        },
+        {
+          "label": "1998 Intercontinental Cup",
+          "url": "https://en.wikipedia.org/wiki/1998_Intercontinental_Cup"
+        },
+        {
+          "label": "2000 Champions League final",
+          "url": "https://en.wikipedia.org/wiki/2000_UEFA_Champions_League_final"
+        }
+      ]
+    }
   },
   {
     "slug": "arsenal-henry",
@@ -63,8 +453,90 @@
       "es": []
     },
     "images": [
-      "/assets/jerseys/arsenal-henry.webp"
-    ]
+      "/assets/jerseys/arsenal-henry-hanger.jpg",
+      "/assets/jerseys/arsenal-henry-model.jpg",
+      "/assets/jerseys/arsenal-henry-detail.jpg",
+      "/assets/jerseys/arsenal-henry-2.jpg",
+      "/assets/jerseys/arsenal-henry-3.jpg"
+    ],
+    "history": {
+      "years": "2002–04",
+      "headline": {
+        "en": "The 14 of Highbury",
+        "es": "El 14 de Highbury"
+      },
+      "story": {
+        "en": [
+          "Thierry Henry wore the number 14 for Arsenal from 1999 to 2007. He became the club’s record scorer with 228 goals and won the Premier League Golden Boot a record four times.",
+          "This was the shirt of his greatest years. He was named both PFA Players’ Player of the Year and FWA Footballer of the Year in 2002–03, and again in 2003–04, when he also won the European Golden Shoe."
+        ],
+        "es": [
+          "Thierry Henry usó el número 14 del Arsenal de 1999 a 2007. Se convirtió en el máximo goleador del club con 228 goles y ganó la Bota de Oro de la Premier League un récord de cuatro veces.",
+          "Esta fue la camisola de sus mejores años. Fue elegido Jugador del Año de la PFA y Futbolista del Año de la FWA en 2002–03, y otra vez en 2003–04, cuando también ganó la Bota de Oro europea."
+        ]
+      },
+      "moment": {
+        "date": {
+          "en": "The 2003–04 season · Premier League",
+          "es": "La temporada 2003–04 · Premier League"
+        },
+        "title": {
+          "en": "The Invincibles",
+          "es": "Los Invencibles"
+        },
+        "text": {
+          "en": "Arsenal went the entire league season without a defeat. Henry led the league in goals and scored 39 across all competitions.",
+          "es": "El Arsenal jugó toda la temporada de liga sin perder. Henry fue el máximo goleador de la liga y anotó 39 goles en todas las competiciones."
+        },
+        "query": "Thierry Henry Arsenal 2003-04 Invincibles best goals"
+      },
+      "stats": [
+        {
+          "value": "228",
+          "label": {
+            "en": "Goals, an Arsenal record",
+            "es": "Goles, récord del Arsenal"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "en": "Premier League Golden Boots",
+            "es": "Botas de Oro de la Premier"
+          }
+        },
+        {
+          "value": "39",
+          "label": {
+            "en": "Goals in 2003–04",
+            "es": "Goles en 2003–04"
+          }
+        }
+      ],
+      "photo": {
+        "src": "/assets/history/arsenal-henry.jpg",
+        "w": 1000,
+        "h": 1958,
+        "alt": {
+          "en": "Thierry Henry applauding the fans in an Arsenal kit",
+          "es": "Thierry Henry aplaudiendo a la afición con el uniforme del Arsenal"
+        },
+        "caption": {
+          "en": "January 2012: Henry applauds the Arsenal fans on his return to the club, in number 12.",
+          "es": "Enero de 2012: Henry aplaude a la afición del Arsenal en su regreso al club, con el número 12."
+        },
+        "credit": "wonker",
+        "license": "CC BY 2.0",
+        "page": "https://commons.wikimedia.org/wiki/File:Thierry_Henry_applauding_2012.jpg",
+        "licenseUrl": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "sources": [
+        {
+          "label": "Thierry Henry",
+          "url": "https://en.wikipedia.org/wiki/Thierry_Henry"
+        }
+      ]
+    }
   },
   {
     "slug": "ac-milan-kaka",
@@ -90,53 +562,93 @@
       ]
     },
     "images": [
-      "/assets/jerseys/ac-milan-kaka.webp"
-    ]
-  },
-  {
-    "slug": "real-madrid-raul",
-    "title": "El 7 Blanco",
-    "team": "Real Madrid",
-    "player": "Raúl",
-    "number": 7,
-    "priceUsd": 90,
-    "discountUsd": 10,
-    "stock": {
-      "M": 1,
-      "L": 1,
-      "XL": 0
-    },
-    "notes": {
-      "en": [],
-      "es": []
-    },
-    "images": [
-      "/assets/jerseys/real-madrid-raul.webp"
-    ]
-  },
-  {
-    "slug": "barcelona",
-    "title": "Alma Blaugrana",
-    "team": "Barcelona",
-    "player": null,
-    "number": null,
-    "priceUsd": 90,
-    "discountUsd": 10,
-    "stock": {
-      "M": 0,
-      "L": 1,
-      "XL": 1
-    },
-    "notes": {
-      "en": [
-        "No back number"
+      "/assets/jerseys/ac-milan-kaka-hanger.jpg",
+      "/assets/jerseys/ac-milan-kaka-model.jpg",
+      "/assets/jerseys/ac-milan-kaka-detail.jpg",
+      "/assets/jerseys/ac-milan-kaka-2.jpg",
+      "/assets/jerseys/ac-milan-kaka-3.jpg"
+    ],
+    "history": {
+      "years": "2006–07",
+      "headline": {
+        "en": "The lucky white shirt",
+        "es": "La camisola blanca de la suerte"
+      },
+      "story": {
+        "en": [
+          "Milan regard their all-white away strip as their lucky kit, and in 2007 they wore it to a final that felt like a rematch. Two years after losing to Liverpool in Istanbul, they faced them again in Athens.",
+          "Kaká finished the tournament as its top scorer, with ten goals. That year he also won the Ballon d’Or."
+        ],
+        "es": [
+          "El Milan considera su uniforme alterno blanco como el de la suerte, y en 2007 lo usó en una final que sabía a revancha. Dos años después de perder con el Liverpool en Estambul, volvió a enfrentarlo en Atenas.",
+          "Kaká terminó como máximo goleador del torneo, con diez goles. Ese año también ganó el Balón de Oro."
+        ]
+      },
+      "moment": {
+        "date": {
+          "en": "23 May 2007 · Olympic Stadium, Athens",
+          "es": "23 de mayo de 2007 · Estadio Olímpico, Atenas"
+        },
+        "title": {
+          "en": "The pass for Inzaghi",
+          "es": "El pase para Inzaghi"
+        },
+        "text": {
+          "en": "Filippo Inzaghi scored just before halftime. In the 82nd minute, Kaká picked out the pass that sent him through for the second. Dirk Kuyt pulled one back late, but Milan won 2–1.",
+          "es": "Filippo Inzaghi anotó justo antes del medio tiempo. En el minuto 82, Kaká dio el pase que lo dejó solo para el segundo. Dirk Kuyt descontó al final, pero el Milan ganó 2–1."
+        },
+        "query": "Milan Liverpool 2007 Champions League final Kaka assist Inzaghi"
+      },
+      "stats": [
+        {
+          "value": "10",
+          "label": {
+            "en": "Goals, tournament top scorer",
+            "es": "Goles, máximo goleador"
+          }
+        },
+        {
+          "value": "2–1",
+          "label": {
+            "en": "Final score in Athens",
+            "es": "Marcador final en Atenas"
+          }
+        },
+        {
+          "value": "2007",
+          "label": {
+            "en": "Ballon d’Or winner",
+            "es": "Ganador del Balón de Oro"
+          }
+        }
       ],
-      "es": [
-        "Sin dorsal"
+      "photo": {
+        "src": "/assets/history/ac-milan-kaka.jpg",
+        "w": 1000,
+        "h": 1501,
+        "alt": {
+          "en": "Kaká warming up in a black Milan training top and white shorts with the number 22",
+          "es": "Kaká calentando con una playera negra del Milan y pantaloneta blanca con el número 22"
+        },
+        "caption": {
+          "en": "May 2007: Kaká, number 22, warming up weeks before Athens.",
+          "es": "Mayo de 2007: Kaká, número 22, calentando semanas antes de Atenas."
+        },
+        "credit": "Roberto Vicario",
+        "license": "CC BY-SA 3.0",
+        "page": "https://commons.wikimedia.org/wiki/File:Kaka06052007.jpg",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/"
+      },
+      "sources": [
+        {
+          "label": "2007 Champions League final",
+          "url": "https://en.wikipedia.org/wiki/2007_UEFA_Champions_League_final"
+        },
+        {
+          "label": "AC Milan: Kaká wins the Ballon d’Or",
+          "url": "https://www.acmilan.com/it/news/articoli/storia/2022-12-02/onthisday-kaka-vince-il-pallone-d-oro"
+        }
       ]
-    },
-    "images": [
-      "/assets/jerseys/barcelona.webp"
-    ]
+    }
   }
 ]

@@ -17,6 +17,12 @@ for (const p of products) {
     errors.push(`${label}: notes must exist in both languages`);
   }
   if (!Array.isArray(p.images)) errors.push(`${label}: images must be a list`);
+  const h = p.history;
+  if (!p.title || !h?.years) errors.push(`${label}: missing title or years`);
+  for (const part of [h?.headline, h?.story, h?.moment?.date, h?.moment?.title, h?.moment?.text, h?.photo?.caption, h?.photo?.alt]) {
+    if (!part?.en?.length || !part?.es?.length) errors.push(`${label}: chapter text must exist in both languages`);
+  }
+  if (!h?.photo?.credit || !h?.photo?.license || !h?.photo?.page) errors.push(`${label}: photo needs credit, license and source`);
   for (const [size, qty] of Object.entries(p.stock || {})) {
     if (!Number.isInteger(qty) || qty < 0) errors.push(`${label}: bad stock for ${size}`);
   }
