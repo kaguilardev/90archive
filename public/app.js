@@ -17,9 +17,11 @@ const T = {
     rights: 'All prices in USD.',
     heroLead: 'A history book you can wear. Six jerseys, six chapters, and the nights that made them.',
     openArchive: 'Open the archive', chapter: 'Chapter', era: 'Era', theMoment: 'The moment',
-    watch: 'Watch highlights on YouTube', sources: 'Sources', photo: 'Photo', readChapter: 'Read the chapter', shopJersey: 'Shop this jersey',
+    watch: 'Watch highlights on YouTube', sources: 'Sources', photo: 'Photo', shopJersey: 'Shop this jersey',
     archiveLead: 'Every jersey here belongs to a time, a player and a night people still talk about. This is the record, in order.',
-    featureEyebrow: 'Why we are called 90:00',
+    aboutEyebrow: 'Why 90:00',
+    aboutTitle: 'Ninety minutes. That’s all football has ever asked for.',
+    aboutText: 'Ninety minutes to become a legend, or to break a city’s heart. Ninety minutes that someone will still be describing to their kids forty years from now. When the clock reaches 90:00, the match ends. What happened inside those ninety minutes never does.',
     everyPiece: ['Every piece tells a story.', 'Every detail matters.', 'Every moment, eternal.'],
     retroNote: 'A new jersey inspired by this history. It is not a shirt worn in these matches.',
   },
@@ -41,9 +43,11 @@ const T = {
     rights: 'Todos los precios en USD.',
     heroLead: 'Un libro de historia que se puede vestir. Seis camisolas, seis capítulos y las noches que las hicieron eternas.',
     openArchive: 'Abrir el archivo', chapter: 'Capítulo', era: 'Época', theMoment: 'El momento',
-    watch: 'Ver resúmenes en YouTube', sources: 'Fuentes', photo: 'Foto', readChapter: 'Leer el capítulo', shopJersey: 'Comprar esta camisola',
+    watch: 'Ver resúmenes en YouTube', sources: 'Fuentes', photo: 'Foto', shopJersey: 'Comprar esta camisola',
     archiveLead: 'Cada camisola pertenece a una época, un jugador y una noche de la que todavía se habla. Este es el registro, en orden.',
-    featureEyebrow: 'Por qué nos llamamos 90:00',
+    aboutEyebrow: 'Por qué 90:00',
+    aboutTitle: 'Noventa minutos. Es todo lo que el fútbol ha pedido siempre.',
+    aboutText: 'Noventa minutos para volverse leyenda o para romperle el corazón a una ciudad. Noventa minutos que alguien les seguirá contando a sus hijos dentro de cuarenta años. Cuando el reloj marca 90:00, el partido termina. Lo que pasó en esos noventa minutos, nunca.',
     everyPiece: ['Cada pieza cuenta una historia.', 'Cada detalle importa.', 'Cada momento, eterno.'],
     retroNote: 'Una camisola nueva inspirada en esta historia. No es una camisola usada en estos partidos.',
   },
@@ -206,7 +210,6 @@ function renderChrome() {
 function renderHome() {
   document.title = '90:00 Archive';
   const names = products.map((p) => `<span>${esc(p.title)} <i>${esc(p.history.years)}</i></span>`).join('');
-  const feature = bySlug('bayern-munchen');
   main.innerHTML = `
     <section class="hero">
       <div class="hero-copy">
@@ -223,13 +226,12 @@ function renderHome() {
       </div>
     </section>
     <div class="ticker" aria-hidden="true"><div class="ticker-track">${names}${names}${names}</div></div>
-    <section class="feature">
-      <img src="${esc(feature.history.photo.src)}" alt="${esc(feature.history.photo.alt[lang])}" width="1000" height="706" loading="lazy">
-      <div class="feature-copy">
-        <p class="eyebrow">${esc(t().featureEyebrow)}</p>
-        <h2>${esc(feature.history.headline[lang])}</h2>
-        <p>${esc(feature.history.moment.text[lang])}</p>
-        <a class="button" href="/archive#${esc(feature.slug)}" data-link>${esc(t().readChapter)}</a>
+    <section class="about">
+      <img src="/assets/logo-ivory.png" alt="" width="874" height="384" loading="lazy">
+      <div>
+        <p class="eyebrow">${esc(t().aboutEyebrow)}</p>
+        <h2>${esc(t().aboutTitle)}</h2>
+        <p>${esc(t().aboutText)}</p>
       </div>
     </section>
     <section class="section">
