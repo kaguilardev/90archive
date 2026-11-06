@@ -31,6 +31,15 @@ describe('catalog', () => {
     assert.equal(await store.seedJerseys(seed), false);
   });
 
+  test('sizes always come back in shirt order', async () => {
+    const order = ['S', 'M', 'L', 'XL', 'XXL'];
+    await store.createJersey({ team: 'Order Test', priceUsd: 90, stock: { XXL: 1, L: 1, S: 1, XL: 1, M: 1 } });
+    const shop = (await store.listPublicJerseys()).find((j) => j.slug === 'order-test');
+    const admin = (await store.listAllJerseys()).find((j) => j.slug === 'order-test');
+    assert.deepEqual(Object.keys(shop.stock), order);
+    assert.deepEqual(Object.keys(admin.stock), order);
+  });
+
   test('new jerseys get a unique address and appear without a chapter', async () => {
     const input = { team: 'Boca Juniors', player: 'Riquelme', number: 10, priceUsd: 90, discountUsd: 10, stock: { M: 2 } };
     assert.equal(await store.createJersey(input), 'boca-juniors-riquelme');

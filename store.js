@@ -24,6 +24,16 @@ export class UserError extends Error {
 }
 
 const parseJson = (value) => (typeof value === 'string' ? JSON.parse(value) : value);
+
+// The database does not keep sizes in the order they were saved, so put them back in shirt order.
+const SIZE_ORDER = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+const sizeRank = (size) => {
+  const rank = SIZE_ORDER.indexOf(size);
+  return rank === -1 ? SIZE_ORDER.length : rank;
+};
+export const sortStock = (stock = {}) => Object.fromEntries(
+  Object.entries(stock).sort(([a], [b]) => sizeRank(a) - sizeRank(b) || a.localeCompare(b)),
+);
 const text = (value, max = 5000) => String(value ?? '').trim().slice(0, max);
 const pair = (value, max) => ({ en: text(value?.en, max), es: text(value?.es, max) });
 const paragraphs = (value) => ({
@@ -123,7 +133,7 @@ export function cleanJersey(input) {
 // Shoppers see English wherever Spanish has not been written yet, rather than a blank.
 const fill = (value) => (value ? { en: value.en, es: value.es?.length ? value.es : value.en } : value);
 export function toPublicJersey(slug, data) {
-  const out = { ...data, slug, notes: fill(data.notes ?? { en: [], es: [] }), images: data.images ?? [], title: data.title || data.team };
+  const out = { ...data, slug, stock: sortStock(data.stock), notes: fill(data.notes ?? { en: [], es: [] }), images: data.images ?? [], title: data.title || data.team };
   const h = data.history;
   if (h) {
     out.history = {
@@ -173,7 +183,10 @@ export function createStore(db) {
 
   async function listAllJerseys() {
     const { rows } = await db.query('SELECT slug, position, active, data, updated_at FROM jerseys ORDER BY position, slug');
-    return rows.map((r) => ({ slug: r.slug, position: r.position, active: r.active, updatedAt: r.updated_at, ...parseJson(r.data) }));
+    return rows.map((r) => {
+      const data = parseJson(r.data);
+      return { slug: r.slug, position: r.position, active: r.active, updatedAt: r.updated_at, ...data, stock: sortStock(data.stock) };
+    });
   }
 
   async function createJersey(input) {
