@@ -14,9 +14,11 @@
     },
     "notes": {
       "en": [
+        "125th anniversary special edition",
         "No back number"
       ],
       "es": [
+        "Edición especial de 125 años",
         "Sin dorsal"
       ]
     },
@@ -28,77 +30,85 @@
       "/assets/jerseys/barcelona-3.jpg"
     ],
     "history": {
-      "years": "1992–95",
+      "years": "1899–2024",
       "headline": {
-        "en": "The years after Wembley",
-        "es": "Los años después de Wembley"
+        "en": "125 years of blaugrana soul",
+        "es": "125 años de alma blaugrana"
       },
       "story": {
         "en": [
-          "For decades, the European Cup was the one trophy Barcelona could not win. Under Johan Cruyff, that finally changed.",
-          "This design looks back to the shirts of 1992 to 1995, the seasons that followed that night at Wembley, when Barça took the field as champions of Europe for the first time."
+          "FC Barcelona began on 29 November 1899, when Hans Gamper, later known as Joan Gamper, and eleven other men founded a club at the Gimnàs Solé. In the blue and garnet stripes that gave the club its blaugrana nickname, it went on to win five European Cups, the first at Wembley in 1992 with Ronald Koeman’s free kick.",
+          "This special edition jersey marks the club’s 125 years. Barcelona celebrated the anniversary on 29 November 2024 with a gala at the Gran Teatre del Liceu, where it presented a new anniversary song, “L’escut al pit”, and a new mascot, Cat."
         ],
         "es": [
-          "Durante décadas, la Copa de Europa fue el trofeo que el Barcelona no podía ganar. Con Johan Cruyff, por fin cambió la historia.",
-          "Este diseño mira a las camisolas de 1992 a 1995, las temporadas que siguieron a aquella noche en Wembley, cuando el Barça salió a la cancha por primera vez como campeón de Europa."
+          "El FC Barcelona nació el 29 de noviembre de 1899, cuando Hans Gamper, más tarde conocido como Joan Gamper, y otros once hombres fundaron un club en el Gimnàs Solé. Con las rayas azules y granas que le dieron el apodo de blaugrana, llegó a ganar cinco Copas de Europa, la primera en Wembley en 1992 con el tiro libre de Ronald Koeman.",
+          "Esta camisola de edición especial celebra los 125 años del club. El Barcelona festejó el aniversario el 29 de noviembre de 2024 con una gala en el Gran Teatre del Liceu, donde presentó una nueva canción del aniversario, “L’escut al pit”, y una nueva mascota, Cat."
         ]
       },
       "moment": {
         "date": {
-          "en": "20 May 1992 · Wembley, London",
-          "es": "20 de mayo de 1992 · Wembley, Londres"
+          "en": "29 November 1899 · Gimnàs Solé, Barcelona",
+          "es": "29 de noviembre de 1899 · Gimnàs Solé, Barcelona"
         },
         "title": {
-          "en": "Koeman’s free kick",
-          "es": "El tiro libre de Koeman"
+          "en": "Twelve founders",
+          "es": "Doce fundadores"
         },
         "text": {
-          "en": "Extra time against Sampdoria, still 0–0. In the 112th minute, Ronald Koeman struck a free kick that won the match 1–0 and gave Barcelona its first European Cup.",
-          "es": "Tiempo extra contra la Sampdoria, todavía 0–0. En el minuto 112, Ronald Koeman cobró el tiro libre que selló el 1–0 y le dio al Barcelona su primera Copa de Europa."
+          "en": "Twelve pioneers met that day and started what became FC Barcelona. The club’s minutes book from that date, shown here, records its first board of directors.",
+          "es": "Doce pioneros se reunieron ese día y comenzaron lo que se convirtió en el FC Barcelona. El libro de actas del club de esa fecha, que se ve aquí, registra su primera junta directiva."
         },
-        "query": "Koeman free kick Barcelona Sampdoria 1992 European Cup final"
+        "query": "FC Barcelona 125 anniversary gala Liceu 2024"
       },
       "stats": [
         {
-          "value": "1st",
+          "value": "1899",
           "label": {
-            "en": "European Cup in club history",
-            "es": "Copa de Europa del club"
+            "en": "The year the club was founded",
+            "es": "Año de fundación del club"
           }
         },
         {
-          "value": "112′",
+          "value": "125",
           "label": {
-            "en": "Minute of the winning goal",
-            "es": "Minuto del gol del triunfo"
+            "en": "Years celebrated in 2024",
+            "es": "Años celebrados en 2024"
           }
         },
         {
-          "value": "1–0",
+          "value": "5",
           "label": {
-            "en": "Final score at Wembley",
-            "es": "Marcador final en Wembley"
+            "en": "European Cups",
+            "es": "Copas de Europa"
           }
         }
       ],
       "photo": {
         "src": "/assets/history/barcelona.jpg",
         "w": 1000,
-        "h": 663,
+        "h": 1044,
         "alt": {
-          "en": "Johan Cruyff riding a bicycle in 1994",
-          "es": "Johan Cruyff en bicicleta en 1994"
+          "en": "Handwritten page from FC Barcelona’s minutes book, dated 29 November 1899",
+          "es": "Página manuscrita del libro de actas del FC Barcelona, con fecha del 29 de noviembre de 1899"
         },
         "caption": {
-          "en": "Johan Cruyff, then Barcelona’s coach, in August 1994.",
-          "es": "Johan Cruyff, entonces técnico del Barcelona, en agosto de 1994."
+          "en": "A page from FC Barcelona’s minutes book, 29 November 1899, naming its first board.",
+          "es": "Una página del libro de actas del FC Barcelona, 29 de noviembre de 1899, con su primera junta directiva."
         },
-        "credit": "Dan Uneken",
-        "license": "CC0",
-        "page": "https://commons.wikimedia.org/wiki/File:Johan_Cruijff_(Cruyff).jpg",
-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+        "credit": "FC Barcelona",
+        "license": "Public domain",
+        "licenseUrl": null,
+        "page": "https://commons.wikimedia.org/wiki/File:Llibre_d%27Actes_FC_Barcelona_1899-11-29.jpg"
       },
       "sources": [
+        {
+          "label": "FC Barcelona",
+          "url": "https://en.wikipedia.org/wiki/FC_Barcelona"
+        },
+        {
+          "label": "FC Barcelona: 125th anniversary gala",
+          "url": "https://www.fcbarcelona.es/es/club/noticias/4178567/el-fc-barcelona-celebra-el-125-aniversario-con-una-fiesta-azulgrana-en-el-gran-teatre-del-liceu"
+        },
         {
           "label": "1992 European Cup final",
           "url": "https://en.wikipedia.org/wiki/1992_European_Cup_final"

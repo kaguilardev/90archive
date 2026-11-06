@@ -21,7 +21,7 @@ const T = {
     archiveLead: 'Every jersey here belongs to a time, a player and a night people still talk about. This is the record, in order.',
     featureEyebrow: 'Why we are called 90:00',
     everyPiece: ['Every piece tells a story.', 'Every detail matters.', 'Every moment, eternal.'],
-    retroNote: 'New retro-style jersey inspired by this era. It is not a shirt worn in these matches.',
+    retroNote: 'A new jersey inspired by this history. It is not a shirt worn in these matches.',
   },
   es: {
     skip: 'Ir al contenido', shop: 'Tienda', archive: 'El Archivo', cart: 'Carrito', otherLang: 'EN', otherLangName: 'View in English',
@@ -45,7 +45,7 @@ const T = {
     archiveLead: 'Cada camisola pertenece a una época, un jugador y una noche de la que todavía se habla. Este es el registro, en orden.',
     featureEyebrow: 'Por qué nos llamamos 90:00',
     everyPiece: ['Cada pieza cuenta una historia.', 'Cada detalle importa.', 'Cada momento, eterno.'],
-    retroNote: 'Camisola nueva de estilo retro, inspirada en esta época. No es una camisola usada en estos partidos.',
+    retroNote: 'Una camisola nueva inspirada en esta historia. No es una camisola usada en estos partidos.',
   },
 };
 
