@@ -366,11 +366,11 @@
       },
       "story": {
         "en": [
-          "Raúl González made his Real Madrid debut on 29 October 1994, away to Real Zaragoza, at just 17 years and 124 days old. From 1996 he wore the number 7, and he kept it until 2010.",
+          "Raúl González made his Real Madrid debut on 29 October 1994, away to Real Zaragoza, at just 17 years old. From 1996 he wore the number 7, and he kept it until 2010.",
           "This shirt belongs to his peak years. In Tokyo in December 1998 he scored the 83rd-minute winner against Vasco da Gama in the Intercontinental Cup. In 1998–99 he won the Pichichi as La Liga’s top scorer, with 25 goals."
         ],
         "es": [
-          "Raúl González debutó con el Real Madrid el 29 de octubre de 1994, de visita contra el Real Zaragoza, con apenas 17 años y 124 días. Desde 1996 usó el número 7, y lo conservó hasta 2010.",
+          "Raúl González debutó con el Real Madrid el 29 de octubre de 1994, de visita contra el Real Zaragoza, con apenas 17 años. Desde 1996 usó el número 7, y lo conservó hasta 2010.",
           "Esta camisola pertenece a sus mejores años. En Tokio, en diciembre de 1998, anotó en el minuto 83 el gol del triunfo contra el Vasco da Gama en la Copa Intercontinental. En 1998–99 ganó el Pichichi como máximo goleador de La Liga, con 25 goles."
         ]
       },
@@ -478,11 +478,13 @@
       "story": {
         "en": [
           "Thierry Henry wore the number 14 for Arsenal from 1999 to 2007. He became the club’s record scorer with 228 goals and won the Premier League Golden Boot a record four times.",
-          "This was the shirt of his greatest years. He was named both PFA Players’ Player of the Year and FWA Footballer of the Year in 2002–03, and again in 2003–04, when he also won the European Golden Shoe."
+          "This was the shirt of his greatest years. He was named both PFA Players’ Player of the Year and FWA Footballer of the Year in 2002–03, and again in 2003–04, when he also won the European Golden Shoe.",
+          "Highbury, in North London, was Arsenal’s home from 1913 to 2006, and it became Henry’s stage. On 7 May 2006, in the last match ever played there, he scored a hat-trick in a 4–2 win over Wigan Athletic, then knelt to kiss the turf."
         ],
         "es": [
           "Thierry Henry usó el número 14 del Arsenal de 1999 a 2007. Se convirtió en el máximo goleador del club con 228 goles y ganó la Bota de Oro de la Premier League un récord de cuatro veces.",
-          "Esta fue la camisola de sus mejores años. Fue elegido Jugador del Año de la PFA y Futbolista del Año de la FWA en 2002–03, y otra vez en 2003–04, cuando también ganó la Bota de Oro europea."
+          "Esta fue la camisola de sus mejores años. Fue elegido Jugador del Año de la PFA y Futbolista del Año de la FWA en 2002–03, y otra vez en 2003–04, cuando también ganó la Bota de Oro europea.",
+          "Highbury, en el norte de Londres, fue la casa del Arsenal de 1913 a 2006, y se convirtió en el escenario de Henry. El 7 de mayo de 2006, en el último partido que se jugó allí, anotó tres goles en la victoria 4–2 sobre el Wigan Athletic y luego se arrodilló a besar el césped."
         ]
       },
       "moment": {
@@ -525,25 +527,29 @@
       ],
       "photo": {
         "src": "/assets/history/arsenal-henry.jpg",
-        "w": 1000,
-        "h": 1958,
+        "w": 528,
+        "h": 432,
         "alt": {
-          "en": "Thierry Henry applauding the fans in an Arsenal kit",
-          "es": "Thierry Henry aplaudiendo a la afición con el uniforme del Arsenal"
+          "en": "Thierry Henry from behind, with his name and number 14 on his Arsenal shirt, standing over a free kick",
+          "es": "Thierry Henry de espaldas, con su nombre y el número 14 en la camisola del Arsenal, frente a un tiro libre"
         },
         "caption": {
-          "en": "January 2012: Henry applauds the Arsenal fans on his return to the club, in number 12.",
-          "es": "Enero de 2012: Henry aplaude a la afición del Arsenal en su regreso al club, con el número 12."
+          "en": "March 2007: Henry, in his number 14, over a free kick against PSV in the Champions League.",
+          "es": "Marzo de 2007: Henry, con su número 14, frente a un tiro libre contra el PSV en la Champions."
         },
-        "credit": "wonker",
-        "license": "CC BY 2.0",
-        "page": "https://commons.wikimedia.org/wiki/File:Thierry_Henry_applauding_2012.jpg",
-        "licenseUrl": "https://creativecommons.org/licenses/by/2.0/"
+        "credit": "Ubber Geek (cropped)",
+        "license": "CC BY-SA 2.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/",
+        "page": "https://commons.wikimedia.org/wiki/File:Arsenal-PSV.jpg"
       },
       "sources": [
         {
           "label": "Thierry Henry",
           "url": "https://en.wikipedia.org/wiki/Thierry_Henry"
+        },
+        {
+          "label": "Arsenal Stadium (Highbury)",
+          "url": "https://en.wikipedia.org/wiki/Arsenal_Stadium"
         }
       ]
     }
@@ -635,19 +641,19 @@
       "photo": {
         "src": "/assets/history/ac-milan-kaka.jpg",
         "w": 1000,
-        "h": 1501,
+        "h": 681,
         "alt": {
-          "en": "Kaká warming up in a black Milan training top and white shorts with the number 22",
-          "es": "Kaká calentando con una playera negra del Milan y pantaloneta blanca con el número 22"
+          "en": "AC Milan players in white shirts celebrating with the Champions League trophy on the pitch in Athens",
+          "es": "Jugadores del AC Milan con camisolas blancas celebrando con el trofeo de la Champions en la cancha de Atenas"
         },
         "caption": {
-          "en": "May 2007: Kaká, number 22, warming up weeks before Athens.",
-          "es": "Mayo de 2007: Kaká, número 22, calentando semanas antes de Atenas."
+          "en": "Athens, 23 May 2007: Milan’s players celebrate in the white shirt, with the trophy in front of them.",
+          "es": "Atenas, 23 de mayo de 2007: los jugadores del Milan celebran con la camisola blanca, con el trofeo frente a ellos."
         },
-        "credit": "Roberto Vicario",
+        "credit": "Antigoni",
         "license": "CC BY-SA 3.0",
-        "page": "https://commons.wikimedia.org/wiki/File:Kaka06052007.jpg",
-        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/"
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+        "page": "https://commons.wikimedia.org/wiki/File:AC_Milan_team_celebrate.jpg"
       },
       "sources": [
         {

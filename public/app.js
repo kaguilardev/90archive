@@ -15,6 +15,7 @@ const T = {
     checkout: 'Checkout', checkoutSoon: 'Online checkout opens soon.',
     notFound: 'We couldn’t find that page.', loadError: 'The collection couldn’t load. Please refresh the page.',
     rights: 'All prices in USD.',
+    thanks: 'Thank you for your order.', thanksText: 'Your payment went through, and we’ll get your jersey ready to ship.', checkoutError: 'Checkout could not start. Please try again.',
     heroLead: 'A history book you can wear. Six jerseys, six chapters, and the nights that made them.',
     openArchive: 'Open the archive', chapter: 'Chapter', era: 'Era', theMoment: 'The moment',
     watch: 'Watch highlights on YouTube', sources: 'Sources', photo: 'Photo', shopJersey: 'Shop this jersey',
@@ -41,6 +42,7 @@ const T = {
     checkout: 'Pagar', checkoutSoon: 'El pago en línea abre pronto.',
     notFound: 'No encontramos esa página.', loadError: 'No se pudo cargar la colección. Recargá la página.',
     rights: 'Todos los precios en USD.',
+    thanks: 'Gracias por tu pedido.', thanksText: 'Tu pago se procesó y vamos a preparar tu camisola para enviarla.', checkoutError: 'No se pudo iniciar el pago. Intentá de nuevo.',
     heroLead: 'Un libro de historia que se puede vestir. Seis camisolas, seis capítulos y las noches que las hicieron eternas.',
     openArchive: 'Abrir el archivo', chapter: 'Capítulo', era: 'Época', theMoment: 'El momento',
     watch: 'Ver resúmenes en YouTube', sources: 'Fuentes', photo: 'Foto', shopJersey: 'Comprar esta camisola',
@@ -56,12 +58,14 @@ const T = {
 // The approved tagline has no official Spanish version yet, so it stays in English in both languages.
 const TAGLINE = 'The match ends. The story lives on.';
 const FREE_SHIPPING_MIN = 2;
+const chapters = () => products.filter((p) => p.history);
 
 const main = document.getElementById('main');
 const header = document.getElementById('header');
 const footer = document.getElementById('footer');
 
 let products = [];
+let checkoutEnabled = false;
 let loadFailed = false;
 let lang = read('lang') || (navigator.language?.toLowerCase().startsWith('es') ? 'es' : 'en');
 let cart = parseCart(read('cart'));
@@ -140,17 +144,18 @@ function card(p, headingTag = 'h3') {
     : visual(p);
   return `<a class="card" href="/shop/${esc(p.slug)}" data-link>
     ${media}
-    <div class="card-years">${esc(p.history.years)}</div>
+    ${p.history ? `<div class="card-years">${esc(p.history.years)}</div>` : ''}
     <${headingTag}>${esc(p.title)}</${headingTag}>
     <div class="meta">${esc(meta)}</div>
     ${soldOut ? `<div class="meta">${esc(t().soldOut)}</div>` : priceLine(p)}
   </a>`;
 }
 
-const chapterNumber = (p) => String(products.indexOf(p) + 1).padStart(2, '0');
+const chapterNumber = (p) => String(chapters().indexOf(p) + 1).padStart(2, '0');
 
 function photoFigure(p) {
   const ph = p.history.photo;
+  if (!ph) return '';
   const licence = ph.licenseUrl ? `<a href="${esc(ph.licenseUrl)}" target="_blank" rel="noopener license">${esc(ph.license)}</a>` : esc(ph.license);
   return `<figure class="history-photo">
     <img src="${esc(ph.src)}" alt="${esc(ph.alt[lang])}" width="${ph.w}" height="${ph.h}" loading="lazy">
@@ -163,6 +168,7 @@ function photoFigure(p) {
 // One chapter of the history book, used on the Archive page and on each jersey page.
 function chapter(p, { onProductPage = false } = {}) {
   const h = p.history;
+  if (!h) return '';
   const youtube = `https://www.youtube.com/results?search_query=${encodeURIComponent(h.moment.query)}`;
   const stats = h.stats.map((x) => `<div class="stat"><b>${esc(x.value)}</b><span>${esc(x.label[lang])}</span></div>`).join('');
   const sources = h.sources.map((x) => `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.label)}</a>`).join(' · ');
@@ -209,7 +215,7 @@ function renderChrome() {
 
 function renderHome() {
   document.title = '90:00 Archive';
-  const names = products.map((p) => `<span>${esc(p.title)} <i>${esc(p.history.years)}</i></span>`).join('');
+  const names = chapters().map((p) => `<span>${esc(p.title)} <i>${esc(p.history.years)}</i></span>`).join('');
   main.innerHTML = `
     <section class="hero">
       <div class="hero-copy">
@@ -247,7 +253,7 @@ function renderHome() {
 
 function renderArchive() {
   document.title = `${t().archive} · 90:00 Archive`;
-  const index = products.map((p) => `<a href="#${esc(p.slug)}"><b>${esc(p.history.years)}</b><span>${esc(p.title)}</span></a>`).join('');
+  const index = chapters().map((p) => `<a href="#${esc(p.slug)}"><b>${esc(p.history.years)}</b><span>${esc(p.title)}</span></a>`).join('');
   main.innerHTML = `
     <header class="archive-intro">
       <p class="eyebrow">90:00 Archive</p>
@@ -255,7 +261,7 @@ function renderArchive() {
       <p>${esc(t().archiveLead)}</p>
       <nav class="archive-index">${index}</nav>
     </header>
-    ${products.map((p) => chapter(p)).join('')}`;
+    ${chapters().map((p) => chapter(p)).join('')}`;
 }
 
 function renderShop() {
@@ -284,7 +290,7 @@ function renderProduct(p) {
     <div class="gallery">${gallery(p)}</div>
     <div class="buy">
       <a class="back" href="/shop" data-link>← ${esc(t().back)}</a>
-      <p class="collection-name">${esc(t().era)} ${esc(p.history.years)}</p>
+      ${p.history ? `<p class="collection-name">${esc(t().era)} ${esc(p.history.years)}</p>` : ''}
       <h1>${esc(p.title)}</h1>
       <p class="player">${esc([p.team, playerLine(p)].filter(Boolean).join(' · '))}</p>
       ${priceLine(p)}
@@ -337,8 +343,8 @@ function renderCart() {
       <div class="summary-row"><span>${esc(t().shipping)}</span><span>${esc(freeShipping ? t().shipFree : t().shipLater)}</span></div>
       <div class="summary-row total"><span>${esc(t().subtotal)}</span><span>$${subtotal}</span></div>
       ${freeShipping ? '' : `<p class="fine nudge">${esc(t().oneMore)}</p>`}
-      <button class="button" type="button" disabled>${esc(t().checkout)}</button>
-      <p class="fine">${esc(t().checkoutSoon)}</p>
+      <button class="button" type="button" ${checkoutEnabled ? 'data-action="checkout"' : 'disabled'}>${esc(t().checkout)}</button>
+      <p class="fine" id="checkout-note" role="status">${checkoutEnabled ? '' : esc(t().checkoutSoon)}</p>
     </div>
   </section>`;
 }
@@ -358,6 +364,15 @@ function route() {
   if (path === '/shop') return renderShop();
   if (path === '/archive') return renderArchive();
   if (path === '/cart') return renderCart();
+  if (path === '/order/complete') {
+    cart = [];
+    saveCart();
+    renderChrome();
+    document.title = `${t().thanks} · 90:00 Archive`;
+    main.innerHTML = `<section class="empty"><h1>${esc(t().thanks)}</h1><p class="thanks-text">${esc(t().thanksText)}</p>
+      <a class="button" href="/archive" data-link>${esc(t().openArchive)}</a></section>`;
+    return undefined;
+  }
   if (productMatch && bySlug(productMatch[1])) return renderProduct(bySlug(productMatch[1]));
   return renderMessage(t().notFound);
 }
@@ -389,6 +404,24 @@ function changeLine(action, key) {
   (stillThere || main).focus({ preventScroll: true });
 }
 
+async function startCheckout(button) {
+  button.disabled = true;
+  const note = document.getElementById('checkout-note');
+  try {
+    const response = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: cart }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error);
+    window.location.assign(data.url);
+  } catch (error) {
+    note.textContent = error.message || t().checkoutError;
+    button.disabled = false;
+  }
+}
+
 document.addEventListener('click', (event) => {
   const link = event.target.closest('a[data-link]');
   if (link && !event.metaKey && !event.ctrlKey && !event.shiftKey) {
@@ -403,6 +436,8 @@ document.addEventListener('click', (event) => {
     write('lang', lang);
     route();
     header.querySelector('.lang').focus();
+  } else if (control.dataset.action === 'checkout') {
+    startCheckout(control);
   } else {
     changeLine(control.dataset.action, control.dataset.key);
   }
@@ -434,6 +469,8 @@ document.addEventListener('submit', (event) => {
 window.addEventListener('popstate', route);
 
 try {
+  const config = await fetch('/api/config').then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+  checkoutEnabled = Boolean(config.checkoutEnabled);
   const response = await fetch('/api/products');
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   products = await response.json();

@@ -9,9 +9,15 @@
   "scripts": {
     "build": "node scripts/check-catalog.js",
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch --env-file-if-exists=.env server.js",
+    "test": "node --test tests/store.test.js"
   },
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "pg": "^8.23.1",
+    "stripe": "^23.1.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.15"
   }
 }
