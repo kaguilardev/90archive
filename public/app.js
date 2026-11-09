@@ -204,7 +204,16 @@ function renderChrome() {
   document.querySelector('.skip').textContent = t().skip;
   const count = cartCount();
   header.innerHTML = `
-    <nav class="nav-left"><a class="nav-link" href="/men" data-link>${esc(t().men)}</a><a class="nav-link" href="/women" data-link>${esc(t().women)}</a><a class="nav-link" href="/archive" data-link>${esc(t().navArchive)}</a></nav>
+    <nav class="nav-left">
+      <div class="nav-drop">
+        <a class="nav-link nav-drop-trigger" href="/shop" data-link aria-haspopup="true" aria-expanded="false">${esc(t().shop)}</a>
+        <div class="nav-menu">
+          <a href="/men" data-link>${esc(t().men)}</a>
+          <a href="/women" data-link>${esc(t().women)}</a>
+        </div>
+      </div>
+      <a class="nav-link" href="/archive" data-link>${esc(t().navArchive)}</a>
+    </nav>
     <a class="wordmark" href="/" data-link aria-label="90:00 Archive"><b>90:00</b><span>ARCHIVE</span></a>
     <div class="nav-right">
       <button class="lang" type="button" data-action="lang" aria-label="${esc(t().otherLangName)}">${esc(t().otherLang)}</button>
@@ -427,11 +436,43 @@ async function startCheckout(button) {
   }
 }
 
+// The header is redrawn after a click, so keep the menu shut while the mouse is still over it.
+function closeUntilMouseLeaves() {
+  const drop = header.querySelector('.nav-drop');
+  if (!drop) return;
+  drop.classList.add('suppress');
+  drop.addEventListener('mouseleave', () => drop.classList.remove('suppress'), { once: true });
+}
+
+function setMenuOpen(open) {
+  const drop = header.querySelector('.nav-drop');
+  if (!drop) return;
+  drop.classList.toggle('open', open);
+  drop.querySelector('.nav-drop-trigger').setAttribute('aria-expanded', String(open));
+}
+
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  const drop = header.querySelector('.nav-drop');
+  setMenuOpen(false);
+  if (drop?.contains(document.activeElement)) document.activeElement.blur();
+});
+
 document.addEventListener('click', (event) => {
+  // Phones have no hover, so tapping Shop opens the menu instead of leaving the page.
+  const trigger = event.target.closest('.nav-drop-trigger');
+  if (trigger && window.matchMedia('(hover: none)').matches) {
+    event.preventDefault();
+    setMenuOpen(!trigger.parentElement.classList.contains('open'));
+    return;
+  }
+  if (!event.target.closest('.nav-drop')) setMenuOpen(false);
+  const fromMenu = Boolean(event.target.closest('.nav-drop'));
   const link = event.target.closest('a[data-link]');
   if (link && !event.metaKey && !event.ctrlKey && !event.shiftKey) {
     event.preventDefault();
     navigate(link.getAttribute('href'));
+    if (fromMenu) closeUntilMouseLeaves();
     return;
   }
   const control = event.target.closest('[data-action]');
