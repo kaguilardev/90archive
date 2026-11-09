@@ -36,7 +36,7 @@ export async function startCheckout(store, lines) {
         currency: 'usd',
         unit_amount: item.unitCents,
         product_data: {
-          name: `${item.title} (${item.size})`,
+          name: `${item.title} (${item.section === 'women' ? 'Women\'s ' : ''}${item.size})`,
           description: [item.team, item.player && `${item.player} #${item.number}`].filter(Boolean).join(' · '),
         },
       },

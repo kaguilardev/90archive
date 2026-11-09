@@ -429,3 +429,9 @@ html { scroll-padding-top: 90px; }
 }
 
 .thanks-text { max-width: 30em; margin: -8px auto 24px; color: var(--muted); }
+
+.shop-tabs { display: flex; gap: 8px; margin: -8px 0 clamp(20px, 3vw, 32px); }
+.shop-tabs a { padding: 7px 16px; border: 1px solid var(--line); font-size: 14px; font-weight: 500; letter-spacing: 0.08em; text-decoration: none; text-transform: uppercase; }
+.shop-tabs a:hover { border-color: var(--sand); }
+.shop-tabs a[aria-current="page"] { background: var(--sand); border-color: var(--sand); color: var(--on-sand); }
+.section-empty { padding: 48px 0; color: var(--muted); text-align: center; }

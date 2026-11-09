@@ -114,7 +114,8 @@
           "url": "https://en.wikipedia.org/wiki/1992_European_Cup_final"
         }
       ]
-    }
+    },
+    "section": "women"
   },
   {
     "slug": "juventus-del-piero",
@@ -221,7 +222,8 @@
           "url": "https://en.wikipedia.org/wiki/1996_Intercontinental_Cup"
         }
       ]
-    }
+    },
+    "section": "men"
   },
   {
     "slug": "bayern-munchen",
@@ -332,7 +334,8 @@
           "url": "https://casualfootballshirts.co.uk/pages/bayern-munich-shirt-history"
         }
       ]
-    }
+    },
+    "section": "men"
   },
   {
     "slug": "real-madrid-raul",
@@ -443,7 +446,8 @@
           "url": "https://en.wikipedia.org/wiki/2000_UEFA_Champions_League_final"
         }
       ]
-    }
+    },
+    "section": "men"
   },
   {
     "slug": "arsenal-henry",
@@ -552,7 +556,8 @@
           "url": "https://en.wikipedia.org/wiki/Arsenal_Stadium"
         }
       ]
-    }
+    },
+    "section": "men"
   },
   {
     "slug": "ac-milan-kaka",
@@ -665,6 +670,7 @@
           "url": "https://www.acmilan.com/it/news/articoli/storia/2022-12-02/onthisday-kaka-vince-il-pallone-d-oro"
         }
       ]
-    }
+    },
+    "section": "men"
   }
 ]

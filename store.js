@@ -80,6 +80,7 @@ export function cleanJersey(input) {
     es: (input?.notes?.es ?? []).map((x) => text(x, 120)).filter(Boolean),
   };
   const jersey = {
+    section: input?.section === 'women' ? 'women' : 'men',
     title: text(input?.title, 120) || team,
     team,
     player: text(input?.player, 120) || null,
@@ -133,7 +134,7 @@ export function cleanJersey(input) {
 // Shoppers see English wherever Spanish has not been written yet, rather than a blank.
 const fill = (value) => (value ? { en: value.en, es: value.es?.length ? value.es : value.en } : value);
 export function toPublicJersey(slug, data) {
-  const out = { ...data, slug, stock: sortStock(data.stock), notes: fill(data.notes ?? { en: [], es: [] }), images: data.images ?? [], title: data.title || data.team };
+  const out = { ...data, slug, section: data.section || 'men', stock: sortStock(data.stock), notes: fill(data.notes ?? { en: [], es: [] }), images: data.images ?? [], title: data.title || data.team };
   const h = data.history;
   if (h) {
     out.history = {
@@ -185,7 +186,7 @@ export function createStore(db) {
     const { rows } = await db.query('SELECT slug, position, active, data, updated_at FROM jerseys ORDER BY position, slug');
     return rows.map((r) => {
       const data = parseJson(r.data);
-      return { slug: r.slug, position: r.position, active: r.active, updatedAt: r.updated_at, ...data, stock: sortStock(data.stock) };
+      return { slug: r.slug, position: r.position, active: r.active, updatedAt: r.updated_at, ...data, section: data.section || 'men', stock: sortStock(data.stock) };
     });
   }
 
@@ -275,7 +276,7 @@ export function createStore(db) {
       const data = parseJson(rows[0].data);
       if (!(size in (data.stock ?? {}))) throw new UserError(`${data.title || data.team} does not come in ${size}.`);
       if (data.stock[size] < qty) throw new UserError(`Only ${data.stock[size]} left of ${data.title || data.team} in ${size}.`, 409);
-      items.push({ slug, size, qty, title: data.title || data.team, team: data.team, player: data.player ?? null, number: data.number ?? null, unitCents: finalCents(data), image: data.images?.[0] ?? null });
+      items.push({ slug, size, qty, section: data.section || 'men', title: data.title || data.team, team: data.team, player: data.player ?? null, number: data.number ?? null, unitCents: finalCents(data), image: data.images?.[0] ?? null });
     }
     const subtotal = items.reduce((sum, i) => sum + i.unitCents * i.qty, 0);
     const units = items.reduce((sum, i) => sum + i.qty, 0);

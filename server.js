@@ -133,7 +133,7 @@ app.get(/^\/admin(\/.*)?$/, (_req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.sendFile(adminFile);
 });
-app.get(/^\/(shop(\/[a-z0-9-]+)?|cart|archive|order\/complete)?\/?$/, (_req, res) => res.sendFile(indexFile));
+app.get(/^\/(shop(\/[a-z0-9-]+)?|cart|archive|men|women|order\/complete)?\/?$/, (_req, res) => res.sendFile(indexFile));
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found.' }));
 app.use((_req, res) => res.status(404).sendFile(indexFile));
 

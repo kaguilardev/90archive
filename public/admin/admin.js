@@ -158,7 +158,7 @@ async function renderOrder(id) {
           ${order.items.map((i) => `<div class="item">
             ${i.image ? `<img class="thumb" src="${esc(i.image)}" alt="">` : '<div class="thumb"></div>'}
             <div><strong>${esc(i.title)}</strong><div class="muted small">${esc([i.team, i.player && `${i.player} #${i.number}`].filter(Boolean).join(' · '))}</div>
-              <div class="small">Size <strong>${esc(i.size)}</strong> × ${esc(i.qty)}</div></div>
+              <div class="small">${i.section === 'women' ? '<strong>Women’s</strong> size' : 'Size'} <strong>${esc(i.size)}</strong> × ${esc(i.qty)}</div></div>
             <div>${esc(money(i.unitCents * i.qty))}</div>
           </div>`).join('')}
           <div class="totals">
@@ -252,7 +252,7 @@ function addManualLine() {
   const row = document.createElement('div');
   row.className = 'line-item';
   row.innerHTML = `
-    <div><label>Jersey</label><select data-role="jersey">${manualJerseys.map((j) => `<option value="${esc(j.slug)}">${esc(j.title)} (${esc(j.team)})</option>`).join('')}</select></div>
+    <div><label>Jersey</label><select data-role="jersey">${manualJerseys.map((j) => `<option value="${esc(j.slug)}">${esc(j.title)} (${esc(j.team)}${j.section === 'women' ? ', women’s' : ''})</option>`).join('')}</select></div>
     <div><label>Size</label><select data-role="size"></select></div>
     <div><label>Qty</label><input data-role="qty" type="number" min="1" value="1"></div>
     <button class="btn tiny" type="button" data-action="remove-line">Remove</button>`;
@@ -276,7 +276,7 @@ async function renderJerseys() {
       ${j.images?.[0] ? `<img class="thumb" src="${esc(j.images[0])}" alt="" loading="lazy">` : '<div class="thumb"></div>'}
       <div><a href="/admin/jerseys/${esc(j.slug)}" data-link><strong>${esc(j.title)}</strong></a>
         <div class="muted small">${esc([j.team, j.player && `${j.player} #${j.number}`].filter(Boolean).join(' · '))}</div>
-        <div class="small">${esc(money(Math.round((j.priceUsd - (j.discountUsd || 0)) * 100)))}${j.discountUsd ? ` <span class="muted">(list ${esc(money(Math.round(j.priceUsd * 100)))})</span>` : ''}${j.active ? '' : ' · <span class="badge">Hidden</span>'}</div></div>
+        <div class="small">${j.section === 'women' ? 'Women’s · ' : 'Men’s · '}${esc(money(Math.round((j.priceUsd - (j.discountUsd || 0)) * 100)))}${j.discountUsd ? ` <span class="muted">(list ${esc(money(Math.round(j.priceUsd * 100)))})</span>` : ''}${j.active ? '' : ' · <span class="badge">Hidden</span>'}</div></div>
       <div class="stock">${Object.entries(j.stock).map(([s, q]) => `<span class="${q ? '' : 'out'}">${esc(s)}: ${esc(q)}</span>`).join('')}</div>
       <div class="row">
         <button class="btn tiny" type="button" data-action="move" data-slug="${esc(j.slug)}" data-direction="up" aria-label="Move ${esc(j.title)} up" ${i === 0 ? 'disabled' : ''}>↑</button>
@@ -321,7 +321,7 @@ function renderHistoryPhoto() {
 async function renderJerseyEditor(slug) {
   const isNew = slug === 'new';
   let j = {
-    title: '', team: '', player: '', number: '', priceUsd: 90, discountUsd: 10, active: true,
+    section: 'men', title: '', team: '', player: '', number: '', priceUsd: 90, discountUsd: 10, active: true,
     stock: { M: 0, L: 0, XL: 0 }, notes: { en: [], es: [] }, images: [], history: null,
   };
   if (!isNew) {
@@ -354,6 +354,8 @@ async function renderJerseyEditor(slug) {
           ${field('priceUsd', 'List price ($)', j.priceUsd, { type: 'number', attrs: 'min="0" step="0.01" required' })}
           ${field('discountUsd', 'Discount ($)', j.discountUsd ?? 0, { type: 'number', attrs: 'min="0" step="0.01"', hint: 'Customers pay the list price minus this.' })}
         </div>
+        <div class="field" style="max-width:260px"><label for="section">Section</label>
+          <select id="section" name="section"><option value="men" ${j.section !== 'women' ? 'selected' : ''}>Men’s</option><option value="women" ${j.section === 'women' ? 'selected' : ''}>Women’s</option></select></div>
         <label class="check field"><input type="checkbox" name="active" ${j.active !== false ? 'checked' : ''}> Show on the website</label>
       </section>
       <section class="card">
@@ -414,6 +416,7 @@ function readJersey(form) {
     if (input.value !== '') stock[input.dataset.size] = Number(input.value);
   });
   return {
+    section: v('section'),
     title: v('title'),
     team: v('team'),
     player: v('player'),

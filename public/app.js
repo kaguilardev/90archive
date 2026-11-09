@@ -1,6 +1,6 @@
 const T = {
   en: {
-    skip: 'Skip to content', shop: 'Shop', archive: 'The Archive', cart: 'Cart', otherLang: 'ES', otherLangName: 'Ver en español',
+    skip: 'Skip to content', shop: 'Shop', archive: 'The Archive', navArchive: 'Archive', men: 'Men', women: 'Women', all: 'All', womens: 'Women’s', sizeWomens: 'Size (women’s)', emptySection: 'New jerseys are on the way.', cart: 'Cart', otherLang: 'ES', otherLangName: 'Ver en español',
     intro: 'New retro-style football jerseys, chosen for the players, goals and eras people still remember.',
     shopAll: 'Shop the collection', viewAll: 'View all', collection: 'The collection',
     statement: ['We don’t sell jerseys.', 'We archive memories.'], regular: 'Regular price', sale: 'Sale price', save: (n) => `$${n} off`,
@@ -27,7 +27,7 @@ const T = {
     retroNote: 'A new jersey inspired by this history. It is not a shirt worn in these matches.',
   },
   es: {
-    skip: 'Ir al contenido', shop: 'Tienda', archive: 'El Archivo', cart: 'Carrito', otherLang: 'EN', otherLangName: 'View in English',
+    skip: 'Ir al contenido', shop: 'Tienda', archive: 'El Archivo', navArchive: 'Archivo', men: 'Hombres', women: 'Mujeres', all: 'Todas', womens: 'De mujer', sizeWomens: 'Talla (mujer)', emptySection: 'Pronto habrá nuevas camisolas.', cart: 'Carrito', otherLang: 'EN', otherLangName: 'View in English',
     intro: 'Camisolas de fútbol nuevas de estilo retro, elegidas por los jugadores, los goles y las épocas que seguimos recordando.',
     shopAll: 'Ver la colección', viewAll: 'Ver todas', collection: 'La colección',
     statement: ['No vendemos camisetas.', 'Archivamos recuerdos.'], regular: 'Precio regular', sale: 'Precio de oferta', save: (n) => `$${n} de descuento`,
@@ -137,7 +137,7 @@ function priceLine(p) {
 
 function card(p, headingTag = 'h3') {
   const soldOut = totalStock(p) === 0;
-  const meta = [p.team, playerLine(p)].filter(Boolean).join(' · ');
+  const meta = [p.section === 'women' ? t().womens : '', p.team, playerLine(p)].filter(Boolean).join(' · ');
   const alt = [p.team, playerLine(p), p.title].filter(Boolean).join(', ');
   const media = p.images[0]
     ? `<div class="plate has-photo swap"><img src="${esc(p.images[0])}" alt="${esc(alt)}" width="502" height="886" loading="lazy">${p.images[1] ? `<img class="alt" src="${esc(p.images[1])}" alt="" width="510" height="886" loading="lazy">` : ''}</div>`
@@ -160,7 +160,7 @@ function photoFigure(p) {
   return `<figure class="history-photo">
     <img src="${esc(ph.src)}" alt="${esc(ph.alt[lang])}" width="${ph.w}" height="${ph.h}" loading="lazy">
     <figcaption>${esc(ph.caption[lang])}
-      <span class="credit">${esc(t().photo)}: <a href="${esc(ph.page)}" target="_blank" rel="noopener">${esc(ph.credit)}</a>, ${licence}</span>
+      <span class="credit">${esc(t().photo)}: ${ph.page ? `<a href="${esc(ph.page)}" target="_blank" rel="noopener">${esc(ph.credit)}</a>` : esc(ph.credit)}, ${licence}</span>
     </figcaption>
   </figure>`;
 }
@@ -204,7 +204,7 @@ function renderChrome() {
   document.querySelector('.skip').textContent = t().skip;
   const count = cartCount();
   header.innerHTML = `
-    <nav class="nav-left"><a class="nav-link" href="/shop" data-link>${esc(t().shop)}</a><a class="nav-link" href="/archive" data-link>${esc(t().archive)}</a></nav>
+    <nav class="nav-left"><a class="nav-link" href="/men" data-link>${esc(t().men)}</a><a class="nav-link" href="/women" data-link>${esc(t().women)}</a><a class="nav-link" href="/archive" data-link>${esc(t().navArchive)}</a></nav>
     <a class="wordmark" href="/" data-link aria-label="90:00 Archive"><b>90:00</b><span>ARCHIVE</span></a>
     <div class="nav-right">
       <button class="lang" type="button" data-action="lang" aria-label="${esc(t().otherLangName)}">${esc(t().otherLang)}</button>
@@ -264,11 +264,15 @@ function renderArchive() {
     ${chapters().map((p) => chapter(p)).join('')}`;
 }
 
-function renderShop() {
-  document.title = `${t().collection} · 90:00 Archive`;
+function renderShop(section) {
+  const heading = section ? t()[section] : t().collection;
+  document.title = `${heading} · 90:00 Archive`;
+  const list = section ? products.filter((p) => p.section === section) : products;
+  const tab = (value, label) => `<a href="${value ? `/${value}` : '/shop'}" data-link ${value === section ? 'aria-current="page"' : ''}>${esc(label)}</a>`;
   main.innerHTML = `<section class="section" style="border-top:0">
-    <div class="section-head"><h1>${esc(t().collection)}</h1></div>
-    <div class="grid">${products.map((p) => card(p, 'h2')).join('')}</div>
+    <div class="section-head"><h1>${esc(heading)}</h1></div>
+    <nav class="shop-tabs">${tab(undefined, t().all)}${tab('men', t().men)}${tab('women', t().women)}</nav>
+    ${list.length ? `<div class="grid">${list.map((p) => card(p, 'h2')).join('')}</div>` : `<p class="section-empty">${esc(t().emptySection)}</p>`}
   </section>`;
 }
 
@@ -292,12 +296,12 @@ function renderProduct(p) {
       <a class="back" href="/shop" data-link>← ${esc(t().back)}</a>
       ${p.history ? `<p class="collection-name">${esc(t().era)} ${esc(p.history.years)}</p>` : ''}
       <h1>${esc(p.title)}</h1>
-      <p class="player">${esc([p.team, playerLine(p)].filter(Boolean).join(' · '))}</p>
+      <p class="player">${esc([p.section === 'women' ? t().womens : '', p.team, playerLine(p)].filter(Boolean).join(' · '))}</p>
       ${priceLine(p)}
       <p class="saving">${esc(t().save(p.discountUsd))}</p>
       ${p.notes[lang].length ? `<ul class="notes">${p.notes[lang].map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
       <form data-add="${esc(p.slug)}" novalidate>
-        <fieldset><legend>${esc(t().size)}</legend><div class="sizes">${sizes}</div></fieldset>
+        <fieldset><legend>${esc(p.section === 'women' ? t().sizeWomens : t().size)}</legend><div class="sizes">${sizes}</div></fieldset>
         <button class="button" type="submit" ${available ? '' : 'disabled'}>${esc(available ? t().add : t().soldOut)}</button>
         <p class="status" role="status"></p>
       </form>
@@ -321,7 +325,7 @@ function renderCart() {
       ${visual(p)}
       <div>
         <h2>${esc(p.team)}</h2>
-        <div class="meta">${esc([playerLine(p), `${t().size} ${line.size}`].filter(Boolean).join(' · '))}</div>
+        <div class="meta">${esc([playerLine(p), `${p.section === 'women' ? t().sizeWomens : t().size} ${line.size}`].filter(Boolean).join(' · '))}</div>
         <div class="line-actions">
           <span class="stepper">
             <button type="button" data-action="dec" data-key="${key}" aria-label="${esc(t().fewer)}">−</button>
@@ -362,6 +366,7 @@ function route() {
   const productMatch = path.match(/^\/shop\/([a-z0-9-]+)$/);
   if (path === '/') return renderHome();
   if (path === '/shop') return renderShop();
+  if (path === '/men' || path === '/women') return renderShop(path.slice(1));
   if (path === '/archive') return renderArchive();
   if (path === '/cart') return renderCart();
   if (path === '/order/complete') {

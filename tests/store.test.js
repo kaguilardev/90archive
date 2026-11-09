@@ -31,6 +31,17 @@ describe('catalog', () => {
     assert.equal(await store.seedJerseys(seed), false);
   });
 
+  test('jerseys keep their section, and orders record it for packing', async () => {
+    const barca = (await store.listPublicJerseys()).find((j) => j.slug === 'barcelona');
+    assert.equal(barca.section, 'women');
+    assert.equal((await store.listPublicJerseys()).find((j) => j.slug === HENRY).section, 'men');
+    assert.equal(cleanJersey({ team: 'X', priceUsd: 90, stock: { M: 1 } }).section, 'men');
+    assert.equal(cleanJersey({ team: 'X', priceUsd: 90, stock: { M: 1 }, section: 'nonsense' }).section, 'men');
+    assert.equal(toPublicJersey('old', { team: 'X', stock: {} }).section, 'men');
+    const order = await store.createPendingOrder([{ slug: 'barcelona', size: 'L', qty: 1 }], SETTINGS);
+    assert.equal(order.items[0].section, 'women');
+  });
+
   test('sizes always come back in shirt order', async () => {
     const order = ['S', 'M', 'L', 'XL', 'XXL'];
     await store.createJersey({ team: 'Order Test', priceUsd: 90, stock: { XXL: 1, L: 1, S: 1, XL: 1, M: 1 } });
