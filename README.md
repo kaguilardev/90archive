@@ -32,7 +32,7 @@ Settings on Render:
 | `STRIPE_WEBHOOK_SECRET` | Confirms payment messages really came from Stripe. |
 | `CHECKOUT_ENABLED` | Must be `true` to open checkout. Sales stay off without it, even with Stripe keys set. |
 
-Set the Stripe webhook to `https://90-00.com/api/stripe/webhook`, sending `checkout.session.completed`, `checkout.session.async_payment_succeeded` and `checkout.session.expired`.
+Set the Stripe webhook to `https://90-00.com/api/stripe/webhook`, sending `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `charge.refunded` and `charge.dispute.created`.
 
 ## Editing the store
 
@@ -46,7 +46,8 @@ Once the database is connected, use the admin at `/admin`:
 
 Good to know:
 
-- Stock drops when payment is confirmed, or when a manual order is saved. Cancelling or refunding an order returns its stock.
+- Stock drops when a customer starts checkout, or when a manual order is saved. Checkout lasts about 30 minutes, and unpaid or failed checkouts return their stock. Cancelling or refunding an order returns its stock too.
+- Refunds and chargebacks made in Stripe flag the order for review in the admin. They don't change its status or stock.
 - Marking an order refunded does not send money back. Issue the refund in Stripe first.
 - The site does not send its own emails, such as shipping notices.
 

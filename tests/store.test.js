@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import Stripe from 'stripe';
 import { openDatabase } from '../db.js';
 import { cleanJersey, createStore, toPublicJersey } from '../store.js';
-import { checkoutStatus, handleStripeEvent, parseWebhook } from '../checkout.js';
+import { checkoutStatus, handleStripeEvent, parseWebhook, startCheckout } from '../checkout.js';
 
 const seed = JSON.parse(readFileSync(new URL('../data/products.json', import.meta.url), 'utf8'));
 const HENRY = 'arsenal-henry';
@@ -106,6 +106,7 @@ describe('website orders', () => {
   test('uses database prices, charges shipping on one jersey and not on two', async () => {
     const one = await place();
     assert.deepEqual([one.subtotal, one.shipping, one.total], [8000, 800, 8800]);
+    await store.markOrderAbandoned(one.id);
     const two = await place([{ slug: HENRY, size: 'M', qty: 1 }, { slug: HENRY, size: 'L', qty: 1 }]);
     assert.deepEqual([two.subtotal, two.shipping, two.total], [16000, 0, 16000]);
   });
@@ -127,10 +128,10 @@ describe('website orders', () => {
     await assert.rejects(store.createPendingOrder([{ slug: HENRY, size: 'L', qty: 1 }], { shippingCents: null }), /Shipping/);
   });
 
-  test('stock only drops once payment is confirmed, and only once', async () => {
+  test('stock is held at checkout and only taken once', async () => {
     const before_ = (await stockOf(HENRY)).L;
     const order = await place();
-    assert.equal((await stockOf(HENRY)).L, before_);
+    assert.equal((await stockOf(HENRY)).L, before_ - 1);
     await pay(order);
     assert.equal((await stockOf(HENRY)).L, before_ - 1);
     const repeat = await pay(order);
@@ -141,13 +142,44 @@ describe('website orders', () => {
     assert.equal(saved.customer.name, 'Test Buyer');
   });
 
-  test('flags an order for review if the last jersey sold while someone was paying', async () => {
+  test('takes stock for every size when a cart has two sizes of one jersey', async () => {
+    const { M, L } = await stockOf(HENRY);
+    await place([{ slug: HENRY, size: 'M', qty: 1 }, { slug: HENRY, size: 'L', qty: 1 }]);
+    const after_ = await stockOf(HENRY);
+    assert.deepEqual([after_.M, after_.L], [M - 1, L - 1]);
+  });
+
+  test('a second shopper cannot check out the last jersey while it is held', async () => {
+    await place();
+    await assert.rejects(place(), /Only 0 left/);
+  });
+
+  test('an abandoned checkout returns its stock exactly once', async () => {
+    const start = (await stockOf(HENRY)).L;
+    const order = await place();
+    await store.markOrderAbandoned(order.id);
+    await store.markOrderAbandoned(order.id);
+    assert.equal((await stockOf(HENRY)).L, start);
+    assert.equal((await store.getOrder(order.id)).stock_applied, false);
+  });
+
+  test('a late payment takes stock again after its hold was released', async () => {
+    const start = (await stockOf(HENRY)).L;
+    const order = await place();
+    await store.markOrderAbandoned(order.id);
+    await pay(order);
+    assert.equal((await stockOf(HENRY)).L, start - 1);
+    assert.equal((await store.getOrder(order.id)).stock_applied, true);
+  });
+
+  test('flags a late payment for review if the jersey has since sold', async () => {
     const first = await place();
+    await store.markOrderAbandoned(first.id);
     const second = await place();
-    await pay(first);
-    const result = await pay(second);
+    await pay(second);
+    const result = await pay(first);
     assert.equal(result.stockOk, false);
-    const saved = await store.getOrder(second.id);
+    const saved = await store.getOrder(first.id);
     assert.equal(saved.needs_review, true);
     assert.equal(saved.stock_applied, false);
     assert.equal((await stockOf(HENRY)).L, 0);
@@ -264,6 +296,65 @@ describe('Stripe', () => {
     event.data.object.payment_status = 'unpaid';
     await handleStripeEvent(store, event);
     assert.equal((await store.getOrder(order.id)).status, 'pending');
+  });
+
+  const paidOrder = async () => {
+    const order = await store.createPendingOrder([{ slug: HENRY, size: 'L', qty: 1 }], SETTINGS);
+    const event = completed(order);
+    event.data.object.payment_intent = 'pi_1';
+    await handleStripeEvent(store, event);
+    return order;
+  };
+  const charge = (type, object) => handleStripeEvent(store, { type, data: { object: { payment_intent: 'pi_1', ...object } } });
+
+  test('a failed delayed payment ends the order and returns its stock', async () => {
+    const start = (await stockOf(HENRY)).L;
+    const order = await store.createPendingOrder([{ slug: HENRY, size: 'L', qty: 1 }], SETTINGS);
+    await handleStripeEvent(store, { type: 'checkout.session.async_payment_failed', data: { object: { client_reference_id: order.id } } });
+    assert.equal((await store.getOrder(order.id)).status, 'abandoned');
+    assert.equal((await stockOf(HENRY)).L, start);
+  });
+
+  test('a chargeback flags the order once and leaves its status and stock alone', async () => {
+    const order = await paidOrder();
+    const stock = (await stockOf(HENRY)).L;
+    const dispute = { amount: 8800, reason: 'fraudulent' };
+    await charge('charge.dispute.created', dispute);
+    await charge('charge.dispute.created', dispute);
+    const saved = await store.getOrder(order.id);
+    assert.equal(saved.needs_review, true);
+    assert.equal(saved.status, 'paid');
+    assert.equal(saved.events.filter((e) => /chargeback/.test(e.message)).length, 1);
+    assert.equal((await stockOf(HENRY)).L, stock);
+  });
+
+  test('a Stripe refund flags the order unless it is already marked refunded', async () => {
+    const order = await paidOrder();
+    await charge('charge.refunded', { amount_refunded: 1000 });
+    assert.equal((await store.getOrder(order.id)).needs_review, true);
+    await store.updateOrder(order.id, { needsReview: false, status: 'refunded' });
+    await charge('charge.refunded', { amount_refunded: 8800 });
+    const saved = await store.getOrder(order.id);
+    assert.equal(saved.needs_review, false);
+    assert.ok(saved.events.some((e) => /\$88\.00 refunded/.test(e.message)));
+  });
+
+  test('ignores refunds for payments that are not store orders', async () => {
+    await charge('charge.refunded', { payment_intent: 'pi_unknown', amount_refunded: 1000 });
+  });
+
+  test('checkout expires after about 30 minutes, and a Stripe failure releases the stock', async () => {
+    const start = (await stockOf(HENRY)).L;
+    await store.saveSettings({ shippingUsd: 8, countries: ['US'] });
+    let sent;
+    const url = await startCheckout(store, [{ slug: HENRY, size: 'L', qty: 1 }], { checkout: { sessions: { create: async (args) => { sent = args; return { id: 'cs_ok', url: 'https://stripe.test/pay' }; } } } });
+    assert.equal(url, 'https://stripe.test/pay');
+    const minutes = (sent.expires_at - Date.now() / 1000) / 60;
+    assert.ok(minutes > 30 && minutes <= 31);
+    await store.markOrderAbandoned(sent.client_reference_id);
+    const failing = { checkout: { sessions: { create: async () => { throw new Error('Stripe is down'); } } } };
+    await assert.rejects(startCheckout(store, [{ slug: HENRY, size: 'L', qty: 1 }], failing), /Stripe is down/);
+    assert.equal((await stockOf(HENRY)).L, start);
   });
 
   test('checkout stays off until every setting is in place', () => {

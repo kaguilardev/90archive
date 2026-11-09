@@ -285,13 +285,16 @@ export function createStore(db) {
 
   // Removes stock for an order. Returns false, changing nothing, if any size has run out.
   async function takeStock(q, items) {
-    const planned = [];
-    for (const item of items) {
-      const { rows } = await q('SELECT data FROM jerseys WHERE slug = $1 FOR UPDATE', [item.slug]);
-      const data = rows.length ? parseJson(rows[0].data) : null;
+    const planned = new Map();
+    // Locking jerseys in a fixed order stops two checkouts from waiting on each other.
+    for (const item of [...items].sort((a, b) => a.slug.localeCompare(b.slug))) {
+      if (!planned.has(item.slug)) {
+        const { rows } = await q('SELECT data FROM jerseys WHERE slug = $1 FOR UPDATE', [item.slug]);
+        planned.set(item.slug, rows.length ? parseJson(rows[0].data) : null);
+      }
+      const data = planned.get(item.slug);
       if (!data || (data.stock?.[item.size] ?? 0) < item.qty) return false;
       data.stock[item.size] -= item.qty;
-      planned.push([item.slug, data]);
     }
     for (const [slug, data] of planned) {
       await q('UPDATE jerseys SET data = $2::jsonb, updated_at = now() WHERE slug = $1', [slug, JSON.stringify(data)]);
@@ -309,16 +312,17 @@ export function createStore(db) {
     }
   }
 
-  // Saved before payment, and only takes stock once payment is confirmed.
+  // Saved before payment. Holds the stock so two people can't pay for the last jersey.
   async function createPendingOrder(lines, settings) {
     return db.tx(async (q) => {
       const { items, subtotal, units } = await priceCart(q, lines);
       if (settings.shippingCents == null) throw new UserError('Shipping is not set up yet.', 503);
+      if (!(await takeStock(q, items))) throw new UserError('One of those sizes just sold out.', 409);
       const shipping = units >= FREE_SHIPPING_MIN ? 0 : settings.shippingCents;
       const id = randomUUID();
-      await q(`INSERT INTO orders (id, status, channel, items, subtotal_cents, shipping_cents, total_cents, events)
-               VALUES ($1, 'pending', 'website', $2::jsonb, $3, $4, $5, $6::jsonb)`,
-      [id, JSON.stringify(items), subtotal, shipping, subtotal + shipping, JSON.stringify([event('Customer started checkout')])]);
+      await q(`INSERT INTO orders (id, status, channel, items, subtotal_cents, shipping_cents, total_cents, stock_applied, events)
+               VALUES ($1, 'pending', 'website', $2::jsonb, $3, $4, $5, true, $6::jsonb)`,
+      [id, JSON.stringify(items), subtotal, shipping, subtotal + shipping, JSON.stringify([event('Customer started checkout, stock held')])]);
       return { id, items, subtotal, shipping, total: subtotal + shipping };
     });
   }
@@ -328,27 +332,50 @@ export function createStore(db) {
   }
 
   // Safe to call repeatedly, because Stripe can deliver the same event more than once.
-  async function markOrderPaid({ orderId, sessionId, customer, totalCents }) {
+  async function markOrderPaid({ orderId, sessionId, paymentIntent = null, customer, totalCents }) {
     return db.tx(async (q) => {
       const { rows } = await q('SELECT * FROM orders WHERE id = $1 FOR UPDATE', [orderId]);
       if (!rows.length) return { found: false };
       const order = orderRow(rows[0]);
       if (order.status !== 'pending' && order.status !== 'abandoned') return { found: true, alreadyHandled: true };
-      const stockOk = await takeStock(q, order.items);
+      // A late payment on an expired checkout has had its hold released, so it needs stock again.
+      const stockOk = order.stock_applied || await takeStock(q, order.items);
       const amountOk = totalCents == null || totalCents === order.total_cents;
       const needsReview = !stockOk || !amountOk;
       const events = [...order.events, event('Payment confirmed by Stripe')];
       if (!stockOk) events.push(event('Stock ran out before payment finished. Refund or source this item.'));
       if (!amountOk) events.push(event(`Stripe charged ${totalCents} cents, but the order total is ${order.total_cents} cents.`));
       await q(`UPDATE orders SET status = 'paid', stripe_session = $2, customer = $3::jsonb, stock_applied = $4, needs_review = $5,
-               events = $6::jsonb, paid_at = now(), updated_at = now() WHERE id = $1`,
-      [orderId, sessionId, JSON.stringify(customer ?? {}), stockOk, needsReview, JSON.stringify(events)]);
+               events = $6::jsonb, payment_intent = $7, paid_at = now(), updated_at = now() WHERE id = $1`,
+      [orderId, sessionId, JSON.stringify(customer ?? {}), stockOk, needsReview, JSON.stringify(events), paymentIntent]);
       return { found: true, stockOk, amountOk };
     });
   }
 
-  async function markOrderAbandoned(orderId) {
-    await db.query("UPDATE orders SET status = 'abandoned', updated_at = now() WHERE id = $1 AND status = 'pending'", [orderId]);
+  // Ends an unpaid checkout and puts its held stock back. Safe to call repeatedly.
+  async function markOrderAbandoned(orderId, reason = 'Checkout ended without payment') {
+    await db.tx(async (q) => {
+      const { rows } = await q("SELECT * FROM orders WHERE id = $1 AND status = 'pending' FOR UPDATE", [orderId]);
+      if (!rows.length) return;
+      const order = orderRow(rows[0]);
+      if (order.stock_applied) await returnStock(q, order.items);
+      await q(`UPDATE orders SET status = 'abandoned', stock_applied = false, events = $2::jsonb, updated_at = now() WHERE id = $1`,
+        [orderId, JSON.stringify([...order.events, event(`${reason}. Stock released.`)])]);
+    });
+  }
+
+  // Notes a refund or chargeback that happened in Stripe. The status and stock stay as they are for a person to decide.
+  async function recordPaymentIssue(paymentIntent, message, { reviewIfRefunded = true } = {}) {
+    if (!paymentIntent) return;
+    await db.tx(async (q) => {
+      const { rows } = await q('SELECT * FROM orders WHERE payment_intent = $1 FOR UPDATE', [paymentIntent]);
+      if (!rows.length) return;
+      const order = orderRow(rows[0]);
+      if (order.events.some((e) => e.message === message)) return;
+      const needsReview = order.needs_review || reviewIfRefunded || order.status !== 'refunded';
+      await q('UPDATE orders SET needs_review = $2, events = $3::jsonb, updated_at = now() WHERE id = $1',
+        [order.id, needsReview, JSON.stringify([...order.events, event(message)])]);
+    });
   }
 
   // For sales made outside the website, such as Instagram messages or in person.
@@ -436,7 +463,7 @@ export function createStore(db) {
   return {
     seedJerseys, listPublicJerseys, listAllJerseys, createJersey, updateJersey, moveJersey,
     saveMedia, getMedia, getSettings, saveSettings,
-    createPendingOrder, attachCheckoutSession, markOrderPaid, markOrderAbandoned, createManualOrder,
+    createPendingOrder, attachCheckoutSession, markOrderPaid, markOrderAbandoned, recordPaymentIssue, createManualOrder,
     listOrders, getOrder, updateOrder, orderCounts,
   };
 }

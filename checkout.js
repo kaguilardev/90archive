@@ -24,12 +24,16 @@ export function checkoutStatus(settings) {
   };
 }
 
-export async function startCheckout(store, lines) {
+// Stripe's minimum is 30 minutes from when it receives the request, so this allows a little extra.
+const CHECKOUT_MINUTES = 31;
+
+export async function startCheckout(store, lines, stripeClient = stripe()) {
   const settings = await store.getSettings();
   const order = await store.createPendingOrder(lines, settings);
-  const session = await stripe().checkout.sessions.create({
+  const session = await stripeClient.checkout.sessions.create({
     mode: 'payment',
     client_reference_id: order.id,
+    expires_at: Math.floor(Date.now() / 1000) + CHECKOUT_MINUTES * 60,
     line_items: order.items.map((item) => ({
       quantity: item.qty,
       price_data: {
@@ -51,6 +55,9 @@ export async function startCheckout(store, lines) {
     }],
     success_url: `${publicUrl()}/order/complete`,
     cancel_url: `${publicUrl()}/cart`,
+  }).catch(async (error) => {
+    await store.markOrderAbandoned(order.id, 'Stripe could not start checkout');
+    throw error;
   });
   await store.attachCheckoutSession(order.id, session.id);
   return session.url;
@@ -72,14 +79,26 @@ export function parseWebhook(rawBody, signature, stripeClient = stripe(), secret
   return stripeClient.webhooks.constructEvent(rawBody, signature, secret);
 }
 
+const usd = (cents) => `$${(cents / 100).toFixed(2)}`;
+
 export async function handleStripeEvent(store, event) {
-  const session = event.data.object;
-  const orderId = session.client_reference_id;
+  const object = event.data.object;
+  if (event.type === 'charge.refunded') {
+    await store.recordPaymentIssue(object.payment_intent, `Stripe shows ${usd(object.amount_refunded)} refunded on this payment.`, { reviewIfRefunded: false });
+    return;
+  }
+  if (event.type === 'charge.dispute.created') {
+    await store.recordPaymentIssue(object.payment_intent, `The customer opened a chargeback for ${usd(object.amount)} (${object.reason}). Respond in the Stripe dashboard.`);
+    return;
+  }
+  const orderId = object.client_reference_id;
   if (!orderId) return;
   if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
-    if (session.payment_status !== 'paid') return;
-    await store.markOrderPaid({ orderId, sessionId: session.id, customer: customerFromSession(session), totalCents: session.amount_total });
+    if (object.payment_status !== 'paid') return;
+    await store.markOrderPaid({ orderId, sessionId: object.id, paymentIntent: object.payment_intent, customer: customerFromSession(object), totalCents: object.amount_total });
+  } else if (event.type === 'checkout.session.async_payment_failed') {
+    await store.markOrderAbandoned(orderId, 'Delayed payment failed');
   } else if (event.type === 'checkout.session.expired') {
-    await store.markOrderAbandoned(orderId);
+    await store.markOrderAbandoned(orderId, 'Checkout expired without payment');
   }
 }

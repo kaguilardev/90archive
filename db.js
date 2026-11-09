@@ -40,6 +40,8 @@ const SCHEMA = `
     paid_at timestamptz,
     updated_at timestamptz NOT NULL DEFAULT now()
   );
+  ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_intent text;
+  CREATE INDEX IF NOT EXISTS orders_payment_intent ON orders (payment_intent);
   CREATE INDEX IF NOT EXISTS orders_status_created ON orders (status, created_at DESC);
   CREATE TABLE IF NOT EXISTS settings (
     key text PRIMARY KEY,
