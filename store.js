@@ -414,9 +414,11 @@ export function createStore(db) {
 
   async function listOrders({ status } = {}) {
     // Unfinished checkouts stay out of the main list, so it only shows orders that need handling.
-    const filter = status && ORDER_STATUSES.includes(status)
-      ? ['WHERE status = $1', [status]]
-      : ["WHERE status NOT IN ('pending', 'abandoned')", []];
+    const filter = status === 'review'
+      ? ["WHERE needs_review AND status NOT IN ('pending', 'abandoned')", []]
+      : status && ORDER_STATUSES.includes(status)
+        ? ['WHERE status = $1', [status]]
+        : ["WHERE status NOT IN ('pending', 'abandoned')", []];
     const { rows } = await db.query(`SELECT * FROM orders ${filter[0]} ORDER BY created_at DESC LIMIT 200`, filter[1]);
     return rows.map(orderRow);
   }
@@ -533,7 +535,8 @@ export function createStore(db) {
 
   async function orderCounts() {
     const { rows } = await db.query('SELECT status, count(*)::int AS n FROM orders GROUP BY status');
-    return Object.fromEntries(rows.map((r) => [r.status, r.n]));
+    const review = await db.query("SELECT count(*)::int AS n FROM orders WHERE needs_review AND status NOT IN ('pending', 'abandoned')");
+    return { ...Object.fromEntries(rows.map((r) => [r.status, r.n])), review: review.rows[0].n };
   }
 
   return {
