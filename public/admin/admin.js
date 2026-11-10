@@ -137,6 +137,19 @@ const ORDER_ACTIONS = {
   refunded: { label: 'Mark as refunded', cls: 'danger', confirm: 'Mark as refunded and put the items back in stock? This does not send money back. Issue the refund in Stripe first.' },
 };
 
+function emailRow(order, kind, name) {
+  const sent = order.emails?.[kind];
+  const base = `${API}/orders/${encodeURIComponent(order.id)}/email/${kind}`;
+  const blocked = !order.customer?.email ? 'No customer email' : kind === 'shipping' && !order.tracking ? 'Needs a tracking number' : '';
+  return `<div class="email-row">
+    <div><strong>${esc(name)}</strong>
+      <div class="muted small">${sent?.at ? `Sent ${esc(when(sent.at))}` : 'Not sent'}${blocked ? ` · ${esc(blocked)}` : ''}</div>
+      <div class="small"><a href="${base}?lang=en" target="_blank" rel="noopener">Preview English</a> · <a href="${base}?lang=es" target="_blank" rel="noopener">Preview Spanish</a></div>
+    </div>
+    <button class="btn tiny" type="button" data-action="email" data-id="${esc(order.id)}" data-kind="${kind}" data-sent="${sent?.at ? '1' : ''}" ${blocked ? 'disabled' : ''}>${sent?.at ? 'Send again' : 'Send now'}</button>
+  </div>`;
+}
+
 async function renderOrder(id) {
   const order = await api(`/orders/${encodeURIComponent(id)}`);
   document.title = `Order #${order.number} · 90:00 Archive`;
@@ -174,6 +187,10 @@ async function renderOrder(id) {
               <div class="field"><label for="carrier">Carrier</label><input id="carrier" name="carrier" type="text" value="${esc(order.carrier)}" placeholder="USPS"></div>
               <div class="field"><label for="tracking">Tracking number</label><input id="tracking" name="tracking" type="text" value="${esc(order.tracking)}"></div>
             </div>
+            <p class="hint">Once the order is marked shipped, saving a tracking number emails it to the customer. Tracking links work for USPS, UPS, FedEx and DHL.</p>
+            ${overview.shippo?.enabled ? `<p class="hint">${order.shippo_order
+    ? 'In Shippo. Buying its label there fills in the tracking and emails the customer.'
+    : 'Not in Shippo yet.'} <button class="btn tiny" type="button" data-action="shippo" data-id="${esc(order.id)}" data-sent="${order.shippo_order ? '1' : ''}">${order.shippo_order ? 'Send again' : 'Send to Shippo'}</button></p>` : ''}
             <div class="field"><label for="note">Private note</label><textarea id="note" name="note">${esc(order.note)}</textarea></div>
             <button class="btn" type="submit">Save</button>
           </form>
@@ -197,6 +214,13 @@ async function renderOrder(id) {
           </address>
           ${c.email ? `<p class="small" style="margin-top:8px"><a href="mailto:${esc(c.email)}">${esc(c.email)}</a></p>` : ''}
           ${c.phone ? `<p class="small">${esc(c.phone)}</p>` : ''}
+        </section>
+        <section class="card">
+          <h2>Customer emails</h2>
+          <p class="muted small">Sent in ${order.lang === 'es' ? 'Spanish' : 'English'}.</p>
+          ${overview.email?.enabled ? '' : '<p class="notice">Email isn’t set up yet, so nothing is sent. <a href="/admin/settings" data-link>See what’s missing</a></p>'}
+          ${emailRow(order, 'confirmation', 'Order confirmation')}
+          ${emailRow(order, 'shipping', 'Shipping and tracking')}
         </section>
         <section class="card">
           <h2>Timeline</h2>
@@ -228,6 +252,7 @@ async function renderManualOrder() {
           <div class="field"><label for="m-channel">Sold through</label><input id="m-channel" name="channel" type="text" value="Instagram"></div>
           <div class="field"><label for="m-email">Email</label><input id="m-email" name="email" type="email"></div>
           <div class="field"><label for="m-phone">Phone</label><input id="m-phone" name="phone" type="text"></div>
+          <div class="field"><label for="m-lang">Email language</label><select id="m-lang" name="lang"><option value="en">English</option><option value="es">Spanish</option></select></div>
         </div>
         <div class="field"><label for="m-line1">Address</label><input id="m-line1" name="line1" type="text"></div>
         <div class="field"><label for="m-line2">Apartment, suite (optional)</label><input id="m-line2" name="line2" type="text"></div>
@@ -467,6 +492,20 @@ async function renderSettings() {
        <ul>${c.missing.map((m) => `<li>${esc(m)}</li>`).join('')}</ul>`}
     </section>
     <section class="card">
+      <h2>Customer emails</h2>
+      ${overview.email.enabled
+    ? `<p>Emails are <strong>on</strong>, sent from <strong>${esc(overview.email.from)}</strong>${overview.email.replyTo ? `, with replies going to <strong>${esc(overview.email.replyTo)}</strong>` : ''}.</p>`
+    : `<p>Emails are <strong>off</strong>. Customers won’t get order confirmations or tracking numbers. Still needed:</p>
+       <ul>${overview.email.missing.map((m) => `<li>${esc(m)}</li>`).join('')}</ul>`}
+    </section>
+    <section class="card">
+      <h2>Shippo labels</h2>
+      ${overview.shippo?.enabled
+    ? `<p>Shippo is <strong>connected</strong> in <strong>${esc(overview.shippo.mode)}</strong> mode. Paid orders go to Shippo, and buying a label there marks the order shipped and emails the customer from this site.</p>`
+    : `<p>Shippo is <strong>not connected</strong>. Enter tracking numbers by hand on each order. Still needed:</p>
+       <ul>${(overview.shippo?.missing ?? []).map((m) => `<li>${esc(m)}</li>`).join('')}</ul>`}
+    </section>
+    <section class="card">
       <h2>Shipping</h2>
       <form data-form="settings">
         <div class="grid-2">
@@ -539,8 +578,20 @@ document.addEventListener('click', async (event) => {
     } else if (action === 'status') {
       const confirmText = ORDER_ACTIONS[control.dataset.status]?.confirm;
       if (confirmText && !window.confirm(confirmText)) return;
-      await api(`/orders/${encodeURIComponent(id)}`, { method: 'PATCH', body: { status: control.dataset.status } });
-      toast('Order updated');
+      const updated = await api(`/orders/${encodeURIComponent(id)}`, { method: 'PATCH', body: { status: control.dataset.status } });
+      toast(updated.status === 'shipped' && !updated.tracking ? 'Marked as shipped. Save a tracking number to email it to the customer.' : 'Order updated');
+      await route();
+    } else if (action === 'email') {
+      if (control.dataset.sent && !window.confirm('This email was already sent. Send it again?')) return;
+      control.disabled = true;
+      const result = await api(`/orders/${encodeURIComponent(id)}/email`, { method: 'POST', body: { kind: control.dataset.kind } });
+      toast(result.sent ? 'Email sent' : `Not sent: ${result.reason}`, !result.sent);
+      await route();
+    } else if (action === 'shippo') {
+      if (control.dataset.sent && !window.confirm('This order is already in Shippo. Send a second copy?')) return;
+      control.disabled = true;
+      const result = await api(`/orders/${encodeURIComponent(id)}/shippo`, { method: 'POST' });
+      toast(result.sent ? 'Sent to Shippo' : `Not sent: ${result.reason}`, !result.sent);
       await route();
     } else if (action === 'reviewed') {
       await api(`/orders/${encodeURIComponent(id)}`, { method: 'PATCH', body: { needsReview: false } });
@@ -640,6 +691,7 @@ document.addEventListener('submit', async (event) => {
       const v = (name) => form.elements[name].value;
       const created = await api('/orders', { method: 'POST', body: {
         channel: v('channel'),
+        lang: v('lang'),
         note: v('note'),
         shippingUsd: v('shippingUsd') || 0,
         items: [...form.querySelectorAll('.line-item')].map((row) => ({

@@ -5,6 +5,8 @@ import { openDatabase } from './db.js';
 import { createStore, FREE_SHIPPING_MIN, NEXT_STATUS, ORDER_STATUSES, toPublicJersey, UserError } from './store.js';
 import { adminConfigured, isSignedIn, login, logout, requireAdmin, sameOrigin } from './auth.js';
 import { checkoutStatus, handleStripeEvent, parseWebhook, startCheckout } from './checkout.js';
+import { confirmationEmail, emailStatus, sendOrderEmail, shippingEmail, shippingEmailDue } from './email.js';
+import { handleShippoEvent, sendOrderToShippo, shippoStatus } from './shipping.js';
 
 const publicDir = fileURLToPath(new URL('./public', import.meta.url));
 const indexFile = fileURLToPath(new URL('./public/index.html', import.meta.url));
@@ -45,6 +47,14 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json', limit: '
   return res.json({ received: true });
 }));
 
+// Shippo calls this when a label is bought or a package is delivered. It wants an answer
+// within three seconds, so the work happens after replying.
+app.post('/api/shippo/webhook', express.json({ limit: '1mb' }), (req, res) => {
+  res.json({ received: true });
+  if (!store || !shippoStatus().enabled) return;
+  handleShippoEvent(store, req.body).catch((error) => console.error('Shippo webhook failed:', error));
+});
+
 // --- Public store ---
 app.get('/api/products', wrap(async (_req, res) => {
   res.setHeader('Cache-Control', 'no-store');
@@ -59,7 +69,7 @@ app.get('/api/config', wrap(async (_req, res) => {
 
 app.post('/api/checkout', express.json({ limit: '50kb' }), needStore, wrap(async (req, res) => {
   if (!checkoutStatus(await store.getSettings()).enabled) return res.status(503).json({ error: 'Online checkout is not open yet.' });
-  res.json({ url: await startCheckout(store, req.body?.items) });
+  res.json({ url: await startCheckout(store, req.body?.items, { lang: req.body?.lang }) });
 }));
 
 app.get('/media/:id', wrap(async (req, res) => {
@@ -98,7 +108,7 @@ admin.use(express.json({ limit: '200kb' }));
 
 admin.get('/overview', wrap(async (_req, res) => {
   const settings = await store.getSettings();
-  res.json({ counts: await store.orderCounts(), settings, checkout: checkoutStatus(settings), statuses: ORDER_STATUSES, nextStatus: NEXT_STATUS });
+  res.json({ counts: await store.orderCounts(), settings, checkout: checkoutStatus(settings), email: emailStatus(), shippo: shippoStatus(), statuses: ORDER_STATUSES, nextStatus: NEXT_STATUS });
 }));
 
 admin.get('/jerseys', wrap(async (_req, res) => res.json(await store.listAllJerseys())));
@@ -113,13 +123,42 @@ admin.post('/jerseys/:slug/move', wrap(async (req, res) => {
 }));
 
 admin.get('/orders', wrap(async (req, res) => res.json(await store.listOrders({ status: req.query.status }))));
-admin.post('/orders', wrap(async (req, res) => res.json(await store.createManualOrder(req.body))));
+admin.post('/orders', wrap(async (req, res) => {
+  const created = await store.createManualOrder(req.body);
+  await sendOrderToShippo(store, created.id);
+  res.json(created);
+}));
+admin.post('/orders/:id/shippo', wrap(async (req, res) => {
+  const result = await sendOrderToShippo(store, req.params.id, { force: true });
+  res.json({ ...result, order: await store.getOrder(req.params.id) });
+}));
 admin.get('/orders/:id', wrap(async (req, res) => {
   const order = await store.getOrder(req.params.id);
   if (!order) throw new UserError('Order not found.', 404);
   res.json(order);
 }));
-admin.patch('/orders/:id', wrap(async (req, res) => res.json(await store.updateOrder(req.params.id, req.body))));
+// Saving an order as shipped with a tracking number emails the customer, once per tracking number.
+admin.patch('/orders/:id', wrap(async (req, res) => {
+  const order = await store.updateOrder(req.params.id, req.body);
+  if (!shippingEmailDue(order)) return res.json(order);
+  await sendOrderEmail(store, order.id, 'shipping');
+  return res.json(await store.getOrder(order.id));
+}));
+admin.post('/orders/:id/email', wrap(async (req, res) => {
+  const kind = req.body?.kind;
+  if (kind !== 'confirmation' && kind !== 'shipping') throw new UserError('Unknown email.');
+  const result = await sendOrderEmail(store, req.params.id, kind, { force: true });
+  res.json({ ...result, order: await store.getOrder(req.params.id) });
+}));
+// Shows an email exactly as the customer would get it, without sending anything.
+admin.get('/orders/:id/email/:kind', wrap(async (req, res) => {
+  const order = await store.getOrder(req.params.id);
+  if (!order) throw new UserError('Order not found.', 404);
+  const build = { confirmation: confirmationEmail, shipping: shippingEmail }[req.params.kind];
+  if (!build) throw new UserError('Unknown email.', 404);
+  const lang = req.query.lang === 'es' || req.query.lang === 'en' ? req.query.lang : order.lang;
+  res.type('html').send(build({ ...order, lang }).html);
+}));
 
 admin.put('/settings', wrap(async (req, res) => res.json(await store.saveSettings(req.body))));
 

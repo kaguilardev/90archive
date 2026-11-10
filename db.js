@@ -41,6 +41,9 @@ const SCHEMA = `
     updated_at timestamptz NOT NULL DEFAULT now()
   );
   ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_intent text;
+  ALTER TABLE orders ADD COLUMN IF NOT EXISTS lang text NOT NULL DEFAULT 'en';
+  ALTER TABLE orders ADD COLUMN IF NOT EXISTS emails jsonb NOT NULL DEFAULT '{}';
+  ALTER TABLE orders ADD COLUMN IF NOT EXISTS shippo_order text;
   CREATE INDEX IF NOT EXISTS orders_payment_intent ON orders (payment_intent);
   CREATE INDEX IF NOT EXISTS orders_status_created ON orders (status, created_at DESC);
   CREATE TABLE IF NOT EXISTS settings (

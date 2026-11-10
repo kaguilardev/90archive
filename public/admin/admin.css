@@ -117,6 +117,7 @@ a.list-row:hover { background: var(--surface); }
 .detail { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 14px; align-items: start; }
 .detail .card + .card { margin-top: 14px; }
 .item { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.email-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
 .totals { margin-top: 10px; }
 .totals div { display: flex; justify-content: space-between; padding: 2px 0; }
 .totals .total { font-size: 19px; font-weight: 500; }

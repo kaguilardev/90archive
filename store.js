@@ -153,6 +153,7 @@ export function toPublicJersey(slug, data) {
 const finalCents = (jersey) => Math.round((jersey.priceUsd - (jersey.discountUsd ?? 0)) * 100);
 const shortId = () => randomBytes(10).toString('hex');
 const event = (message) => ({ at: new Date().toISOString(), message });
+const language = (value) => (value === 'es' ? 'es' : 'en');
 
 function orderRow(row) {
   return {
@@ -160,6 +161,7 @@ function orderRow(row) {
     customer: parseJson(row.customer),
     items: parseJson(row.items),
     events: parseJson(row.events),
+    emails: parseJson(row.emails ?? {}),
   };
 }
 
@@ -313,16 +315,16 @@ export function createStore(db) {
   }
 
   // Saved before payment. Holds the stock so two people can't pay for the last jersey.
-  async function createPendingOrder(lines, settings) {
+  async function createPendingOrder(lines, settings, lang = 'en') {
     return db.tx(async (q) => {
       const { items, subtotal, units } = await priceCart(q, lines);
       if (settings.shippingCents == null) throw new UserError('Shipping is not set up yet.', 503);
       if (!(await takeStock(q, items))) throw new UserError('One of those sizes just sold out.', 409);
       const shipping = units >= FREE_SHIPPING_MIN ? 0 : settings.shippingCents;
       const id = randomUUID();
-      await q(`INSERT INTO orders (id, status, channel, items, subtotal_cents, shipping_cents, total_cents, stock_applied, events)
-               VALUES ($1, 'pending', 'website', $2::jsonb, $3, $4, $5, true, $6::jsonb)`,
-      [id, JSON.stringify(items), subtotal, shipping, subtotal + shipping, JSON.stringify([event('Customer started checkout, stock held')])]);
+      await q(`INSERT INTO orders (id, status, channel, items, subtotal_cents, shipping_cents, total_cents, stock_applied, events, lang)
+               VALUES ($1, 'pending', 'website', $2::jsonb, $3, $4, $5, true, $6::jsonb, $7)`,
+      [id, JSON.stringify(items), subtotal, shipping, subtotal + shipping, JSON.stringify([event('Customer started checkout, stock held')]), language(lang)]);
       return { id, items, subtotal, shipping, total: subtotal + shipping };
     });
   }
@@ -403,9 +405,9 @@ export function createStore(db) {
       if (!(await takeStock(q, items))) throw new UserError('One of those sizes just sold out.', 409);
       const shipping = Math.round(shippingUsd * 100);
       const id = randomUUID();
-      const { rows } = await q(`INSERT INTO orders (id, status, channel, customer, items, subtotal_cents, shipping_cents, total_cents, note, stock_applied, events, paid_at)
-                 VALUES ($1, 'paid', $2, $3::jsonb, $4::jsonb, $5, $6, $7, $8, true, $9::jsonb, now()) RETURNING number`,
-      [id, channel, JSON.stringify(customer), JSON.stringify(items), subtotal, shipping, subtotal + shipping, note, JSON.stringify([event(`Manual order added (${channel})`)])]);
+      const { rows } = await q(`INSERT INTO orders (id, status, channel, customer, items, subtotal_cents, shipping_cents, total_cents, note, stock_applied, events, paid_at, lang)
+                 VALUES ($1, 'paid', $2, $3::jsonb, $4::jsonb, $5, $6, $7, $8, true, $9::jsonb, now(), $10) RETURNING number`,
+      [id, channel, JSON.stringify(customer), JSON.stringify(items), subtotal, shipping, subtotal + shipping, note, JSON.stringify([event(`Manual order added (${channel})`)]), language(input?.lang)]);
       return { id, number: rows[0].number };
     });
   }
@@ -455,6 +457,80 @@ export function createStore(db) {
     }).then(() => getOrder(id));
   }
 
+  // Reserves an email before it goes out, so two saves at once can't send it twice.
+  // Returns the order, or null if this email (with this key) was already sent.
+  async function claimEmail(orderId, kind, keyOf, { force = false } = {}) {
+    return db.tx(async (q) => {
+      const { rows } = await q('SELECT * FROM orders WHERE id = $1 FOR UPDATE', [orderId]);
+      if (!rows.length) throw new UserError('Order not found.', 404);
+      const order = orderRow(rows[0]);
+      const key = keyOf(order);
+      const previous = order.emails[kind] ?? null;
+      if (!force && previous?.key === key) return null;
+      const emails = { ...order.emails, [kind]: { key, at: new Date().toISOString(), previous } };
+      await q('UPDATE orders SET emails = $2::jsonb WHERE id = $1', [orderId, JSON.stringify(emails)]);
+      return order;
+    });
+  }
+
+  // Notes how an email went. A failed one is un-reserved so it can be sent again.
+  async function finishEmail(orderId, kind, { ok, message }) {
+    await db.tx(async (q) => {
+      const { rows } = await q('SELECT * FROM orders WHERE id = $1 FOR UPDATE', [orderId]);
+      if (!rows.length) return;
+      const order = orderRow(rows[0]);
+      const emails = { ...order.emails };
+      const { previous = null, ...sent } = emails[kind] ?? {};
+      if (ok) emails[kind] = sent;
+      else if (previous) emails[kind] = previous;
+      else delete emails[kind];
+      await q('UPDATE orders SET emails = $2::jsonb, events = $3::jsonb, updated_at = now() WHERE id = $1',
+        [orderId, JSON.stringify(emails), JSON.stringify([...order.events, event(message)])]);
+    });
+  }
+
+  // --- Shippo ---
+  async function noteShippoOrder(orderId, shippoOrder, message) {
+    await db.tx(async (q) => {
+      const { rows } = await q('SELECT * FROM orders WHERE id = $1 FOR UPDATE', [orderId]);
+      if (!rows.length) return;
+      const order = orderRow(rows[0]);
+      await q('UPDATE orders SET shippo_order = coalesce($2, shippo_order), events = $3::jsonb, updated_at = now() WHERE id = $1',
+        [orderId, shippoOrder, JSON.stringify([...order.events, event(message)])]);
+    });
+  }
+
+  async function ordersAwaitingLabel() {
+    const { rows } = await db.query("SELECT * FROM orders WHERE shippo_order IS NOT NULL AND status IN ('paid', 'packed', 'shipped') ORDER BY created_at DESC LIMIT 100");
+    return rows.map(orderRow);
+  }
+
+  // A label bought in Shippo marks the order shipped with its tracking number.
+  async function recordShippoLabel(orderId, { carrier, tracking }) {
+    await db.tx(async (q) => {
+      const { rows } = await q('SELECT * FROM orders WHERE id = $1 FOR UPDATE', [orderId]);
+      if (!rows.length) return;
+      const order = orderRow(rows[0]);
+      if (order.tracking === tracking) return;
+      const events = [...order.events, event(`Label bought in Shippo${carrier ? ` (${carrier})` : ''}. Tracking set to ${tracking}`)];
+      if (order.status !== 'shipped') events.push(event('Status changed to shipped'));
+      await q(`UPDATE orders SET status = 'shipped', carrier = $2, tracking = $3, events = $4::jsonb, updated_at = now() WHERE id = $1`,
+        [orderId, text(carrier, 80), text(tracking, 120), JSON.stringify(events)]);
+    });
+    return getOrder(orderId);
+  }
+
+  async function markDeliveredByTracking(tracking) {
+    return db.tx(async (q) => {
+      const { rows } = await q("SELECT * FROM orders WHERE tracking = $1 AND status = 'shipped' FOR UPDATE", [tracking]);
+      if (rows.length !== 1) return null;
+      const order = orderRow(rows[0]);
+      await q(`UPDATE orders SET status = 'delivered', events = $2::jsonb, updated_at = now() WHERE id = $1`,
+        [order.id, JSON.stringify([...order.events, event('Carrier shows the package delivered')])]);
+      return order.id;
+    });
+  }
+
   async function orderCounts() {
     const { rows } = await db.query('SELECT status, count(*)::int AS n FROM orders GROUP BY status');
     return Object.fromEntries(rows.map((r) => [r.status, r.n]));
@@ -464,7 +540,8 @@ export function createStore(db) {
     seedJerseys, listPublicJerseys, listAllJerseys, createJersey, updateJersey, moveJersey,
     saveMedia, getMedia, getSettings, saveSettings,
     createPendingOrder, attachCheckoutSession, markOrderPaid, markOrderAbandoned, recordPaymentIssue, createManualOrder,
-    listOrders, getOrder, updateOrder, orderCounts,
+    listOrders, getOrder, updateOrder, orderCounts, claimEmail, finishEmail,
+    noteShippoOrder, ordersAwaitingLabel, recordShippoLabel, markDeliveredByTracking,
   };
 }
 

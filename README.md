@@ -31,6 +31,9 @@ Settings on Render:
 | `STRIPE_SECRET_KEY` | Stripe key. A `sk_test_` key uses fake payments, and `sk_live_` takes real ones. |
 | `STRIPE_WEBHOOK_SECRET` | Confirms payment messages really came from Stripe. |
 | `CHECKOUT_ENABLED` | Must be `true` to open checkout. Sales stay off without it, even with Stripe keys set. |
+| `RESEND_API_KEY` | Sends customer emails through [Resend](https://resend.com). Without it, no emails go out. |
+| `EMAIL_FROM` | The sender customers see, such as `90:00 Archive <orders@90-00.com>`. The domain must be verified in Resend. |
+| `EMAIL_REPLY_TO` | Optional. Where customer replies go, if not the sender address. |
 
 Set the Stripe webhook to `https://90-00.com/api/stripe/webhook`, sending `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `charge.refunded` and `charge.dispute.created`.
 
@@ -49,7 +52,8 @@ Good to know:
 - Stock drops when a customer starts checkout, or when a manual order is saved. Checkout lasts about 30 minutes, and unpaid or failed checkouts return their stock. Cancelling or refunding an order returns its stock too.
 - Refunds and chargebacks made in Stripe flag the order for review in the admin. They don't change its status or stock.
 - Marking an order refunded does not send money back. Issue the refund in Stripe first.
-- The site does not send its own emails, such as shipping notices.
+- Customers get an order confirmation when Stripe confirms payment, and a tracking email when an order is marked shipped and has a tracking number. Each goes in the language they shopped in. Changing the tracking number sends a new tracking email. The order page shows what was sent, previews both emails, and can send them again.
+- If a jersey sold out before payment finished, the confirmation is held until it's sent from the order page.
 
 ## Before opening sales
 
@@ -58,6 +62,7 @@ Good to know:
 - [ ] Add real photos, season, home or away, fabric, cut, measurements and care details.
 - [ ] Add Stripe keys, test a full purchase with fake payments, then set `CHECKOUT_ENABLED`.
 - [ ] Set the shipping rate and countries in the admin, and write a returns policy.
+- [ ] Choose the sender address, verify the domain in Resend, and approve the email wording in English and Spanish.
 - [ ] Add policy pages (shipping, returns, privacy, terms) and contact details.
 - [ ] Sort out business registration and sales tax.
 - [ ] Confirm the Spanish tagline, the domain and the social handles.

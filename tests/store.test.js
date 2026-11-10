@@ -5,6 +5,8 @@ import Stripe from 'stripe';
 import { openDatabase } from '../db.js';
 import { cleanJersey, createStore, toPublicJersey } from '../store.js';
 import { checkoutStatus, handleStripeEvent, parseWebhook, startCheckout } from '../checkout.js';
+import { handleShippoEvent, sendOrderToShippo, shippoOrderBody } from '../shipping.js';
+import { confirmationEmail, sendOrderEmail, shippingEmail, shippingEmailDue, trackingUrl } from '../email.js';
 
 const seed = JSON.parse(readFileSync(new URL('../data/products.json', import.meta.url), 'utf8'));
 const HENRY = 'arsenal-henry';
@@ -347,13 +349,13 @@ describe('Stripe', () => {
     const start = (await stockOf(HENRY)).L;
     await store.saveSettings({ shippingUsd: 8, countries: ['US'] });
     let sent;
-    const url = await startCheckout(store, [{ slug: HENRY, size: 'L', qty: 1 }], { checkout: { sessions: { create: async (args) => { sent = args; return { id: 'cs_ok', url: 'https://stripe.test/pay' }; } } } });
+    const url = await startCheckout(store, [{ slug: HENRY, size: 'L', qty: 1 }], { stripeClient: { checkout: { sessions: { create: async (args) => { sent = args; return { id: 'cs_ok', url: 'https://stripe.test/pay' }; } } } } });
     assert.equal(url, 'https://stripe.test/pay');
     const minutes = (sent.expires_at - Date.now() / 1000) / 60;
     assert.ok(minutes > 30 && minutes <= 31);
     await store.markOrderAbandoned(sent.client_reference_id);
     const failing = { checkout: { sessions: { create: async () => { throw new Error('Stripe is down'); } } } };
-    await assert.rejects(startCheckout(store, [{ slug: HENRY, size: 'L', qty: 1 }], failing), /Stripe is down/);
+    await assert.rejects(startCheckout(store, [{ slug: HENRY, size: 'L', qty: 1 }], { stripeClient: failing }), /Stripe is down/);
     assert.equal((await stockOf(HENRY)).L, start);
   });
 
@@ -375,5 +377,214 @@ describe('Stripe', () => {
     } finally {
       process.env = saved;
     }
+  });
+});
+
+describe('customer emails', () => {
+  let outbox;
+  const send = async (message) => { outbox.push(message); };
+  const sendEmail = (s, id, kind, options) => sendOrderEmail(s, id, kind, { send, ...options });
+  const paidEvent = (order, email = 'buyer@example.com') => ({
+    type: 'checkout.session.completed',
+    data: { object: {
+      id: `cs_${order.id}`, client_reference_id: order.id, payment_status: 'paid', amount_total: order.total, payment_intent: `pi_${order.id}`,
+      customer_details: { email, name: 'Ana López' },
+      collected_information: { shipping_details: { name: 'Ana López', address: { line1: '1 Main St', city: 'Raleigh', state: 'NC', postal_code: '27601', country: 'US' } } },
+    } },
+  });
+  const ship = async (id, tracking, carrier = 'USPS') => {
+    const order = await store.updateOrder(id, { status: 'shipped', carrier, tracking });
+    if (shippingEmailDue(order)) await sendEmail(store, id, 'shipping');
+    return store.getOrder(id);
+  };
+
+  beforeEach(() => { outbox = []; });
+
+  test('payment sends one confirmation in the language the customer shopped in', async () => {
+    const order = await store.createPendingOrder([{ slug: HENRY, size: 'L', qty: 1 }], SETTINGS, 'es');
+    await handleStripeEvent(store, paidEvent(order), { sendEmail });
+    await handleStripeEvent(store, paidEvent(order), { sendEmail });
+    assert.equal(outbox.length, 1);
+    assert.equal(outbox[0].to, 'buyer@example.com');
+    assert.match(outbox[0].subject, /^Pedido #\d+ confirmado/);
+    assert.match(outbox[0].html, /¡Gracias, Ana!/);
+    assert.match(outbox[0].text, /Total: \$88\.00/);
+    const saved = await store.getOrder(order.id);
+    assert.ok(saved.emails.confirmation.at);
+    assert.equal(saved.emails.confirmation.previous, undefined);
+    assert.ok(saved.events.some((e) => e.message.startsWith('Confirmation email sent to buyer@example.com')));
+  });
+
+  test('holds the confirmation when the jersey sold out before payment finished', async () => {
+    const order = await store.createPendingOrder([{ slug: HENRY, size: 'L', qty: 1 }], SETTINGS);
+    await store.markOrderAbandoned(order.id);
+    const stock = (await stockOf(HENRY)).L;
+    await store.createPendingOrder([{ slug: HENRY, size: 'L', qty: stock }], SETTINGS);
+    await handleStripeEvent(store, paidEvent(order), { sendEmail });
+    assert.equal(outbox.length, 0);
+    assert.ok((await store.getOrder(order.id)).events.some((e) => e.message.startsWith('Confirmation email held')));
+  });
+
+  test('shipping with tracking emails the customer once per tracking number', async () => {
+    const order = await store.createPendingOrder([{ slug: HENRY, size: 'L', qty: 1 }], SETTINGS);
+    await handleStripeEvent(store, paidEvent(order), { sendEmail });
+    outbox = [];
+    assert.equal(shippingEmailDue(await store.updateOrder(order.id, { status: 'shipped' })), false);
+    await ship(order.id, '9400 1000');
+    await ship(order.id, '9400 1000');
+    assert.equal(outbox.length, 1);
+    assert.match(outbox[0].subject, /^Order #\d+ has shipped/);
+    assert.match(outbox[0].html, /tLabels=9400%201000/);
+    await ship(order.id, '9400 2000');
+    assert.equal(outbox.length, 2);
+  });
+
+  test('a failed send is noted and can be retried, and orders without email are skipped', async () => {
+    const order = await store.createPendingOrder([{ slug: HENRY, size: 'L', qty: 1 }], SETTINGS);
+    const failing = async () => { throw new Error('mailbox full'); };
+    await handleStripeEvent(store, paidEvent(order), { sendEmail: (s, id, kind) => sendOrderEmail(s, id, kind, { send: failing }) });
+    let saved = await store.getOrder(order.id);
+    assert.equal(saved.emails.confirmation, undefined);
+    assert.ok(saved.events.some((e) => e.message.includes('mailbox full')));
+    assert.deepEqual(await sendEmail(store, order.id, 'confirmation'), { sent: true });
+    saved = await store.getOrder(order.id);
+    assert.ok(saved.emails.confirmation.at);
+
+    const manual = await store.createManualOrder({ customer: { name: 'No Email' }, items: [{ slug: HENRY, size: 'M', qty: 1 }] });
+    assert.equal((await sendEmail(store, manual.id, 'confirmation')).sent, false);
+  });
+
+  test('nothing is sent until email is set up', async () => {
+    const saved = process.env;
+    process.env = { ...saved, RESEND_API_KEY: '', EMAIL_FROM: '' };
+    try {
+      const manual = await store.createManualOrder({ customer: { name: 'A', email: 'a@example.com' }, items: [{ slug: HENRY, size: 'M', qty: 1 }] });
+      const result = await sendOrderEmail(store, manual.id, 'confirmation');
+      assert.deepEqual(result, { sent: false, reason: 'email is not set up yet' });
+    } finally {
+      process.env = saved;
+    }
+  });
+
+  test('emails escape customer text and handle women’s sizes and unknown carriers', () => {
+    const order = {
+      number: 7, lang: 'en', carrier: 'Cargo Expreso', tracking: 'GT123',
+      customer: { name: '<b>Eve</b>', address: { line1: '1 <script>' } },
+      items: [{ title: 'Barcelona', team: 'Barcelona', section: 'women', size: 'M', qty: 2, unitCents: 8000 }],
+      subtotal_cents: 16000, shipping_cents: 0, total_cents: 16000,
+    };
+    const confirm = confirmationEmail(order);
+    assert.doesNotMatch(confirm.html, /<script>|<b>Eve/);
+    assert.match(confirm.html, /Women’s size M/);
+    assert.match(confirm.text, /Shipping: Free/);
+    assert.match(confirm.text, /jerseys ready to ship/);
+    assert.equal(trackingUrl('Cargo Expreso', 'GT123'), '');
+    const shipped = shippingEmail({ ...order, lang: 'es' });
+    assert.match(shipped.html, /Talla M de mujer/);
+    assert.doesNotMatch(shipped.html, /Rastrear tu paquete/);
+  });
+});
+
+describe('Shippo', () => {
+  const LABEL = 'a'.repeat(32);
+  const SHIPPO_ORDER = 'b'.repeat(32);
+  const address = { line1: '1 Main St', city: 'Raleigh', state: 'NC', postal_code: '27601', country: 'US' };
+
+  const manualOrder = async () => store.createManualOrder({
+    customer: { name: 'Buyer', email: 'buyer@example.com', address }, items: [{ slug: HENRY, size: 'L', qty: 1 }],
+  });
+  // A stand-in for Shippo's API that answers from a small table and records what was asked.
+  const fakeShippo = (answers) => {
+    const calls = [];
+    const request = async (path, options = {}) => {
+      calls.push({ path, ...options });
+      if (!(path in answers)) throw new Error(`unexpected ${path}`);
+      return answers[path];
+    };
+    return { request, calls };
+  };
+
+  test('copies a paid order into Shippo once, with the address and items', async () => {
+    const { id } = await manualOrder();
+    const shippo = fakeShippo({ '/orders/': { object_id: SHIPPO_ORDER } });
+    assert.deepEqual(await sendOrderToShippo(store, id, { request: shippo.request }), { sent: true });
+    assert.deepEqual(await sendOrderToShippo(store, id, { request: shippo.request }), { sent: false, reason: 'already in Shippo' });
+    assert.equal(shippo.calls.length, 1);
+    const body = shippo.calls[0].body;
+    assert.equal(body.to_address.zip, '27601');
+    assert.equal(body.line_items[0].quantity, 1);
+    assert.equal(body.order_status, 'PAID');
+    assert.equal((await store.getOrder(id)).shippo_order, SHIPPO_ORDER);
+  });
+
+  test('does not send an order without an address', async () => {
+    const { id } = await store.createManualOrder({ customer: { name: 'In person' }, items: [{ slug: HENRY, size: 'L', qty: 1 }] });
+    const shippo = fakeShippo({});
+    const result = await sendOrderToShippo(store, id, { request: shippo.request });
+    assert.equal(result.sent, false);
+    assert.equal(shippo.calls.length, 0);
+  });
+
+  test('a bought label marks the order shipped and sends this site’s shipping email once', async () => {
+    const { id } = await manualOrder();
+    await store.noteShippoOrder(id, SHIPPO_ORDER, 'Sent to Shippo');
+    const shippo = fakeShippo({
+      [`/transactions/${LABEL}`]: { object_id: LABEL, status: 'SUCCESS', tracking_number: '9400111', order: SHIPPO_ORDER, rate: { provider: 'USPS' } },
+    });
+    const sent = [];
+    const sendEmail = async (_s, orderId, kind) => sent.push([orderId, kind]);
+    const payload = { event: 'transaction_created', data: { object_id: LABEL, tracking_number: 'forged' } };
+    await handleShippoEvent(store, payload, { request: shippo.request, sendEmail });
+    const order = await store.getOrder(id);
+    assert.equal(order.status, 'shipped');
+    assert.equal(order.tracking, '9400111');
+    assert.equal(order.carrier, 'USPS');
+    assert.deepEqual(sent, [[id, 'shipping']]);
+  });
+
+  test('matches a label to its order through the Shippo order when the label does not name it', async () => {
+    const { id } = await manualOrder();
+    await store.noteShippoOrder(id, SHIPPO_ORDER, 'Sent to Shippo');
+    const shippo = fakeShippo({
+      [`/transactions/${LABEL}`]: { object_id: LABEL, status: 'SUCCESS', tracking_number: '9400222', rate: 'r1' },
+      '/rates/r1': { provider: 'UPS' },
+      [`/orders/${SHIPPO_ORDER}`]: { transactions: [{ object_id: LABEL }] },
+    });
+    await handleShippoEvent(store, { event: 'transaction_updated', data: { object_id: LABEL } }, { request: shippo.request, sendEmail: async () => {} });
+    const order = await store.getOrder(id);
+    assert.equal(order.tracking, '9400222');
+    assert.equal(order.carrier, 'UPS');
+  });
+
+  test('ignores a label that failed or belongs to no order', async () => {
+    const { id } = await manualOrder();
+    await store.noteShippoOrder(id, SHIPPO_ORDER, 'Sent to Shippo');
+    const failed = fakeShippo({ [`/transactions/${LABEL}`]: { object_id: LABEL, status: 'ERROR' } });
+    assert.equal((await handleShippoEvent(store, { event: 'transaction_created', data: { object_id: LABEL } }, { request: failed.request })).handled, false);
+    const other = fakeShippo({ [`/transactions/${LABEL}`]: { object_id: LABEL, status: 'SUCCESS', tracking_number: '1Z999', order: 'c'.repeat(32) } });
+    assert.equal((await handleShippoEvent(store, { event: 'transaction_created', data: { object_id: LABEL } }, { request: other.request })).handled, false);
+    assert.equal((await store.getOrder(id)).status, 'paid');
+  });
+
+  test('marks an order delivered only when Shippo confirms it', async () => {
+    const { id } = await manualOrder();
+    await store.updateOrder(id, { status: 'shipped', carrier: 'USPS', tracking: '9400333' });
+    const transit = fakeShippo({ '/tracks/usps/9400333': { tracking_status: { status: 'TRANSIT' } } });
+    const payload = { event: 'track_updated', data: { carrier: 'usps', tracking_number: '9400333', tracking_status: { status: 'DELIVERED' } } };
+    await handleShippoEvent(store, payload, { request: transit.request });
+    assert.equal((await store.getOrder(id)).status, 'shipped');
+    const delivered = fakeShippo({ '/tracks/usps/9400333': { tracking_status: { status: 'DELIVERED' } } });
+    await handleShippoEvent(store, payload, { request: delivered.request });
+    assert.equal((await store.getOrder(id)).status, 'delivered');
+  });
+
+  test('describes women’s sizes for packing', () => {
+    const body = shippoOrderBody({
+      number: 7, customer: { name: 'A', address }, shipping_cents: 800, subtotal_cents: 8000, total_cents: 8800,
+      items: [{ slug: 'x', title: 'Shirt', section: 'women', size: 'M', qty: 1, unitCents: 8000 }],
+    });
+    assert.equal(body.order_number, '#7');
+    assert.match(body.line_items[0].title, /Women’s M/);
+    assert.equal(body.shipping_cost, '8.00');
   });
 });
