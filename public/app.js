@@ -26,7 +26,13 @@ const T = {
     everyPiece: ['Every piece tells a story.', 'Every detail matters.', 'Every moment, eternal.'],
     packEyebrow: 'What arrives', packTitle: 'Every jersey ships as a chapter of the archive.',
     packText: 'Folded in tissue, sealed with the 90:00 mark, tagged, and sent with a card for its chapter.',
-    packAlt: (team) => `Packaging for the ${team} jersey: mailer, box, hang tag and archive cards`,
+    packSteps: ['The mailer', 'Folded in tissue', 'The hang tag', 'Its chapter card'],
+    packAlt: [
+      () => '90:00 mailer bag reading “We don’t sell jerseys. We archive memories.”',
+      (team) => `The ${team} jersey folded in a box with tissue paper and a 90:00 seal`,
+      (team) => `Black 90:00 Archive hang tag on the ${team} jersey`,
+      (team) => `Archive card for the ${team} jersey with its years and chapter`,
+    ],
     retroNote: 'A new jersey inspired by this history. It is not a shirt worn in these matches.',
   },
   es: {
@@ -56,7 +62,13 @@ const T = {
     everyPiece: ['Cada pieza cuenta una historia.', 'Cada detalle importa.', 'Cada momento, eterno.'],
     packEyebrow: 'Lo que recibís', packTitle: 'Cada camisola llega como un capítulo del archivo.',
     packText: 'Doblada en papel de seda, sellada con la marca 90:00, con su etiqueta y una tarjeta de su capítulo.',
-    packAlt: (team) => `Empaque de la camisola de ${team}: bolsa, caja, etiqueta y tarjetas del archivo`,
+    packSteps: ['La bolsa', 'Doblada en papel de seda', 'La etiqueta', 'Su tarjeta del capítulo'],
+    packAlt: [
+      () => 'Bolsa de envío 90:00 que dice “We don’t sell jerseys. We archive memories.”',
+      (team) => `La camisola de ${team} doblada en una caja con papel de seda y un sello 90:00`,
+      (team) => `Etiqueta negra de 90:00 Archive sobre la camisola de ${team}`,
+      (team) => `Tarjeta del archivo para la camisola de ${team} con sus años y su capítulo`,
+    ],
     retroNote: 'Una camisola nueva inspirada en esta historia. No es una camisola usada en estos partidos.',
   },
 };
@@ -259,7 +271,7 @@ function renderHome() {
       <div class="section-head"><h2>${esc(t().collection)}</h2><a href="/shop" data-link>${esc(t().viewAll)}</a></div>
       <div class="grid">${products.map((p) => card(p)).join('')}</div>
     </section>
-    ${packSection(['barcelona', 'bayern-munchen', 'ac-milan-kaka'].map(bySlug).filter(Boolean))}
+    ${packSection(bySlug('juventus-del-piero') ?? products[0])}
     <section class="statement">
       <p>${t().everyPiece.map(esc).join('<br>')}</p>
       <div class="rule"></div>
@@ -292,19 +304,23 @@ function renderShop(section) {
   </section>`;
 }
 
-// Packaging mockups come from scripts/make-packaging-mockups.js. A jersey without one hides the block.
-function packShot(p) {
-  return `<img src="/assets/packaging/${esc(p.slug)}.jpg" alt="${esc(t().packAlt(p.team))}" width="1600" height="1200" loading="lazy" onerror="this.closest('.pack-item, .pack')?.remove()">`;
-}
+// Packaging close-ups come from scripts/make-packaging-mockups.js, shown as a numbered unboxing.
+// A jersey without them hides the whole section.
+const PACK_SHOTS = ['mailer', 'box', 'tag', 'card'];
 
-function packSection(list, { single = false } = {}) {
-  return `<section class="pack${single ? ' single' : ''}">
+function packSection(p) {
+  if (!p) return '';
+  const steps = PACK_SHOTS.map((shot, i) => `<figure class="pack-step">
+      <img src="/assets/packaging/${esc(p.slug)}-${shot}.jpg" alt="${esc(t().packAlt[i](p.team))}" width="800" height="1000" loading="lazy" onerror="this.closest('.pack')?.remove()">
+      <figcaption><span>${String(i + 1).padStart(2, '0')}</span>${esc(t().packSteps[i])}</figcaption>
+    </figure>`).join('');
+  return `<section class="pack">
     <div class="pack-copy">
       <p class="eyebrow">${esc(t().packEyebrow)}</p>
       <h2>${esc(t().packTitle)}</h2>
       <p>${esc(t().packText)}</p>
     </div>
-    <div class="pack-row">${list.map((p) => `<figure class="pack-item">${packShot(p)}</figure>`).join('')}</div>
+    <div class="pack-steps">${steps}</div>
   </section>`;
 }
 
@@ -340,7 +356,7 @@ function renderProduct(p) {
       <p class="fine">${esc(t().freeShip)}<br>${esc(t().details)}</p>
     </div>
   </article>
-  ${packSection([p], { single: true })}
+  ${packSection(p)}
   ${chapter(p, { onProductPage: true })}`;
 }
 

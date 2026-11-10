@@ -1,4 +1,4 @@
-// Renders a packaging mockup for each jersey into public/assets/packaging/<slug>.jpg.
+// Renders packaging close-ups for each jersey into public/assets/packaging/<slug>-<shot>.jpg.
 // Uses the jersey's own photos, so the mockups stay accurate when products change.
 // Needs Google Chrome or Microsoft Edge installed. Run: node scripts/make-packaging-mockups.js [slug]
 import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync } from 'node:fs';
@@ -78,6 +78,8 @@ function scene(p, index) {
   .shirt { position: absolute; height: auto; filter: saturate(.95) contrast(1.03); }
   .flap { position: absolute; top: -2%; width: 40%; height: 26%;
     background: linear-gradient(135deg, #efe3cb, #dcc9a6 70%); filter: drop-shadow(0 8px 10px rgba(40,25,5,.4)); }
+  .side { position: absolute; top: 30%; bottom: 0; width: 7%; background: linear-gradient(90deg, #dcc9a6, #ebdfc6); box-shadow: 0 0 14px rgba(40,25,5,.35); }
+  .side.l { left: 0; } .side.r { right: 0; background: linear-gradient(270deg, #dcc9a6, #ebdfc6); }
   .flap.l { left: -4%; clip-path: polygon(0 0, 100% 0, 0 100%); }
   .flap.r { right: -4%; clip-path: polygon(0 0, 100% 0, 100% 100%); background: linear-gradient(225deg, #efe3cb, #d8c4a0 70%); }
   .tissue { position: absolute; left: -4%; right: -4%; bottom: -2%; height: 41%;
@@ -132,7 +134,7 @@ function scene(p, index) {
   .sticker .caps { font-size: 6.5px; margin-top: 6px; }
   .light { position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(115deg, rgba(255,250,235,.18), transparent 45%, rgba(40,25,5,.12)); }
-</style></head><body>
+</style></head><body><div id="stage">
 <div class="linen"></div>
 <svg class="grain" width="1600" height="1200"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="3" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .35  0 0 0 0 .27  0 0 0 0 .15  0 0 0 .5 0"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>
 
@@ -147,7 +149,7 @@ function scene(p, index) {
 <div class="obj box">
   <div class="well">
     <img class="shirt" src="${front}" alt="" onload="window.fit && fit(this)">
-    <div class="flap l"></div><div class="flap r"></div>
+    <div class="flap l"></div><div class="flap r"></div><div class="side l"></div><div class="side r"></div>
     <div class="tissue-shade"></div>
     <div class="tissue"></div>
     <div class="obj seal"><div class="serif">90:00</div><div class="caps">Archive</div></div>
@@ -197,7 +199,7 @@ function scene(p, index) {
   <p class="serif mark">90:00</p>
 </div>
 <div class="obj sticker paper"><div class="serif">90:00</div><div class="caps">Football, remembered.</div></div>
-<div class="light"></div>
+<div class="light"></div></div>
 <script>
   // Crop the hanger photo to the shirt: x and y are where the crop starts and w its width, as parts of the photo.
   function fit(img) {
@@ -213,18 +215,33 @@ function scene(p, index) {
 </body></html>`;
 }
 
+// Close-ups cut from the full scene (in its 1600×1200 coordinates), each saved as <slug>-<name>.jpg at 800×1000.
+const SHOTS = {
+  mailer: { x: 10, y: 40, w: 520, h: 650 },
+  box: { x: 470, y: 28, w: 664, h: 830 },
+  tag: { x: 452, y: 150, w: 368, h: 460 },
+  card: { x: 1118, y: 48, w: 452, h: 565 },
+};
+const OUT = { w: 800, h: 1000 };
+
 const work = join(tmpdir(), `90archive-mockups-${process.pid}`);
 mkdirSync(work, { recursive: true });
 try {
   products.forEach((p, i) => {
     if (only && p.slug !== only) return;
     if (!p.images?.length) return console.log(`skip ${p.slug}: no photos`);
-    const html = join(work, `${p.slug}.html`);
-    const shot = join(work, `${p.slug}.jpg`);
-    writeFileSync(html, scene(p, i));
-    execFileSync(browser, ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files',
-      '--window-size=1600,1200', '--virtual-time-budget=8000', `--screenshot=${shot}`, pathToFileURL(html).href], { stdio: 'ignore' });
-    writeFileSync(join(outDir, `${p.slug}.jpg`), readFileSync(shot));
+    for (const [name, crop] of Object.entries(SHOTS)) {
+      const html = join(work, `${p.slug}-${name}.html`);
+      const shot = join(work, `${p.slug}-${name}.jpg`);
+      const s = OUT.w / crop.w;
+      const view = `<style>html, body { width: ${OUT.w}px; height: ${OUT.h}px; }
+        #stage { position: absolute; left: 0; top: 0; width: 1600px; height: 1200px; transform-origin: 0 0;
+          transform: scale(${s}) translate(${-crop.x}px, ${-crop.y}px); }</style>`;
+      writeFileSync(html, scene(p, i).replace('</head>', `${view}</head>`));
+      execFileSync(browser, ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files',
+        `--window-size=${OUT.w},${OUT.h}`, '--virtual-time-budget=8000', `--screenshot=${shot}`, pathToFileURL(html).href], { stdio: 'ignore' });
+      writeFileSync(join(outDir, `${p.slug}-${name}.jpg`), readFileSync(shot));
+    }
     console.log(`made ${p.slug}`);
   });
 } finally {
