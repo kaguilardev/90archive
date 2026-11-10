@@ -34,6 +34,7 @@ Settings on Render:
 | `RESEND_API_KEY` | Sends customer emails through [Resend](https://resend.com). Without it, no emails go out. |
 | `EMAIL_FROM` | The sender customers see, such as `90:00 Archive <orders@90-00.com>`. The domain must be verified in Resend. |
 | `EMAIL_REPLY_TO` | Optional. Where customer replies go, if not the sender address. |
+| `SHIPPO_API_KEY` | Connects [Shippo](https://goshippo.com) for labels. A `shippo_test_` key makes test labels, and `shippo_live_` real ones. |
 
 Set the Stripe webhook to `https://90-00.com/api/stripe/webhook`, sending `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `charge.refunded` and `charge.dispute.created`.
 
@@ -53,6 +54,7 @@ Good to know:
 - Refunds and chargebacks made in Stripe flag the order for review in the admin. They don't change its status or stock.
 - Marking an order refunded does not send money back. Issue the refund in Stripe first.
 - Customers get an order confirmation when Stripe confirms payment, and a tracking email when an order is marked shipped and has a tracking number. Each goes in the language they shopped in. Changing the tracking number sends a new tracking email. The order page shows what was sent, previews both emails, and can send them again.
+- With Shippo connected, paid orders with an address are copied into Shippo. Buying the label there marks the order shipped and sends this site's tracking email. Shippo's own customer emails stay off. A delivered package marks the order delivered. Shippo's webhooks (Settings → API, all events, test and live) point to `https://90-00.com/api/shippo/webhook`.
 - If a jersey sold out before payment finished, the confirmation is held until it's sent from the order page.
 
 ## Before opening sales
