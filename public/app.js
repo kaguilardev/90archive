@@ -24,6 +24,9 @@ const T = {
     aboutTitle: 'Ninety minutes. That’s all football has ever asked for.',
     aboutText: 'Ninety minutes to become a legend, or to break a city’s heart. Ninety minutes that someone will still be describing to their kids forty years from now. When the clock reaches 90:00, the match ends. What happened inside those ninety minutes never does.',
     everyPiece: ['Every piece tells a story.', 'Every detail matters.', 'Every moment, eternal.'],
+    packEyebrow: 'What arrives', packTitle: 'Every jersey ships as a chapter of the archive.',
+    packText: 'Folded in tissue, sealed with the 90:00 mark, tagged, and sent with a card for its chapter.',
+    packAlt: (team) => `Packaging for the ${team} jersey: mailer, box, hang tag and archive cards`,
     retroNote: 'A new jersey inspired by this history. It is not a shirt worn in these matches.',
   },
   es: {
@@ -51,6 +54,9 @@ const T = {
     aboutTitle: 'Noventa minutos. Es todo lo que el fútbol ha pedido siempre.',
     aboutText: 'Noventa minutos para volverse leyenda o para romperle el corazón a una ciudad. Noventa minutos que alguien les seguirá contando a sus hijos dentro de cuarenta años. Cuando el reloj marca 90:00, el partido termina. Lo que pasó en esos noventa minutos, nunca.',
     everyPiece: ['Cada pieza cuenta una historia.', 'Cada detalle importa.', 'Cada momento, eterno.'],
+    packEyebrow: 'Lo que recibís', packTitle: 'Cada camisola llega como un capítulo del archivo.',
+    packText: 'Doblada en papel de seda, sellada con la marca 90:00, con su etiqueta y una tarjeta de su capítulo.',
+    packAlt: (team) => `Empaque de la camisola de ${team}: bolsa, caja, etiqueta y tarjetas del archivo`,
     retroNote: 'Una camisola nueva inspirada en esta historia. No es una camisola usada en estos partidos.',
   },
 };
@@ -253,6 +259,7 @@ function renderHome() {
       <div class="section-head"><h2>${esc(t().collection)}</h2><a href="/shop" data-link>${esc(t().viewAll)}</a></div>
       <div class="grid">${products.map((p) => card(p)).join('')}</div>
     </section>
+    ${packSection(['barcelona', 'bayern-munchen', 'ac-milan-kaka'].map(bySlug).filter(Boolean))}
     <section class="statement">
       <p>${t().everyPiece.map(esc).join('<br>')}</p>
       <div class="rule"></div>
@@ -282,6 +289,22 @@ function renderShop(section) {
     <div class="section-head"><h1>${esc(heading)}</h1></div>
     <nav class="shop-tabs">${tab(undefined, t().all)}${tab('men', t().men)}${tab('women', t().women)}</nav>
     ${list.length ? `<div class="grid">${list.map((p) => card(p, 'h2')).join('')}</div>` : `<p class="section-empty">${esc(t().emptySection)}</p>`}
+  </section>`;
+}
+
+// Packaging mockups come from scripts/make-packaging-mockups.js. A jersey without one hides the block.
+function packShot(p) {
+  return `<img src="/assets/packaging/${esc(p.slug)}.jpg" alt="${esc(t().packAlt(p.team))}" width="1600" height="1200" loading="lazy" onerror="this.closest('.pack-item, .pack')?.remove()">`;
+}
+
+function packSection(list, { single = false } = {}) {
+  return `<section class="pack${single ? ' single' : ''}">
+    <div class="pack-copy">
+      <p class="eyebrow">${esc(t().packEyebrow)}</p>
+      <h2>${esc(t().packTitle)}</h2>
+      <p>${esc(t().packText)}</p>
+    </div>
+    <div class="pack-row">${list.map((p) => `<figure class="pack-item">${packShot(p)}</figure>`).join('')}</div>
   </section>`;
 }
 
@@ -317,6 +340,7 @@ function renderProduct(p) {
       <p class="fine">${esc(t().freeShip)}<br>${esc(t().details)}</p>
     </div>
   </article>
+  ${packSection([p], { single: true })}
   ${chapter(p, { onProductPage: true })}`;
 }
 
