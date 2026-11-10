@@ -459,6 +459,20 @@ export function createStore(db) {
     }).then(() => getOrder(id));
   }
 
+  // Removes an order for good. Any stock it still holds goes back on the shelf.
+  // A checkout in progress can't be deleted, because the customer could still pay for it.
+  async function deleteOrder(id) {
+    return db.tx(async (q) => {
+      const { rows } = await q('SELECT * FROM orders WHERE id = $1 FOR UPDATE', [id]);
+      if (!rows.length) throw new UserError('Order not found.', 404);
+      const order = orderRow(rows[0]);
+      if (order.status === 'pending') throw new UserError('This customer is still at checkout. It ends on its own within about 30 minutes, and then it can be deleted.', 409);
+      if (order.stock_applied) await returnStock(q, order.items);
+      await q('DELETE FROM orders WHERE id = $1', [id]);
+      return { number: order.number, restocked: order.stock_applied };
+    });
+  }
+
   // Reserves an email before it goes out, so two saves at once can't send it twice.
   // Returns the order, or null if this email (with this key) was already sent.
   async function claimEmail(orderId, kind, keyOf, { force = false } = {}) {
@@ -543,7 +557,7 @@ export function createStore(db) {
     seedJerseys, listPublicJerseys, listAllJerseys, createJersey, updateJersey, moveJersey,
     saveMedia, getMedia, getSettings, saveSettings,
     createPendingOrder, attachCheckoutSession, markOrderPaid, markOrderAbandoned, recordPaymentIssue, createManualOrder,
-    listOrders, getOrder, updateOrder, orderCounts, claimEmail, finishEmail,
+    listOrders, getOrder, updateOrder, deleteOrder, orderCounts, claimEmail, finishEmail,
     noteShippoOrder, ordersAwaitingLabel, recordShippoLabel, markDeliveredByTracking,
   };
 }

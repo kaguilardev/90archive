@@ -197,6 +197,8 @@ function nextStepCard(order, next) {
     ${forward ? `<div class="row">${button(forward, 'btn primary big')}${order.status === 'packed' && shippo ? '<a class="btn big" href="https://apps.goshippo.com/orders" target="_blank" rel="noopener">Open Shippo ↗</a>' : ''}</div>` : ''}
     ${others.length ? `<div class="more row"><span class="muted small">Other actions:</span>${others.map((s) => button(s, 'textlink')).join('')}</div>` : ''}
     ${order.stripe_session ? '<p class="hint">Refunds are issued in your <a href="https://dashboard.stripe.com/payments" target="_blank" rel="noopener">Stripe dashboard</a> first.</p>' : ''}
+    ${order.status === 'pending' ? '' : `<div class="more"><button class="textlink danger" type="button" data-action="delete-order" data-id="${esc(order.id)}"
+      data-number="${esc(order.number)}" data-restock="${order.stock_applied ? '1' : ''}" data-paid="${order.payment_intent ? '1' : ''}">Delete this order</button></div>`}
   </section>`;
 }
 
@@ -674,6 +676,16 @@ document.addEventListener('click', async (event) => {
       const result = await api(`/orders/${encodeURIComponent(id)}/shippo`, { method: 'POST' });
       toast(result.sent ? 'Sent to Shippo' : `Not sent: ${result.reason}`, !result.sent);
       await route();
+    } else if (action === 'delete-order') {
+      const warning = [
+        `Delete order #${control.dataset.number} for good? It disappears from your orders and can’t be brought back.`,
+        control.dataset.restock ? 'Its jerseys go back into stock.' : '',
+        control.dataset.paid ? 'This does not refund the customer. Do that in Stripe first if needed.' : '',
+      ].filter(Boolean).join('\n\n');
+      if (!window.confirm(warning)) return;
+      const result = await api(`/orders/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      toast(`Order #${result.number} deleted${result.restocked ? ' and its jerseys put back in stock' : ''}`);
+      go('/admin');
     } else if (action === 'reviewed') {
       await api(`/orders/${encodeURIComponent(id)}`, { method: 'PATCH', body: { needsReview: false } });
       await route();

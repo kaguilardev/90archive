@@ -144,6 +144,7 @@ admin.patch('/orders/:id', wrap(async (req, res) => {
   await sendOrderEmail(store, order.id, 'shipping');
   return res.json(await store.getOrder(order.id));
 }));
+admin.delete('/orders/:id', wrap(async (req, res) => res.json(await store.deleteOrder(req.params.id))));
 admin.post('/orders/:id/email', wrap(async (req, res) => {
   const kind = req.body?.kind;
   if (kind !== 'confirmation' && kind !== 'shipping') throw new UserError('Unknown email.');

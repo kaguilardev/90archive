@@ -588,3 +588,29 @@ describe('Shippo', () => {
     assert.equal(body.shipping_cost, '8.00');
   });
 });
+
+describe('deleting orders', () => {
+  test('deletes an order and returns its stock once', async () => {
+    const start = (await stockOf(HENRY)).L;
+    const { id } = await store.createManualOrder({ customer: { name: 'Buyer' }, items: [{ slug: HENRY, size: 'L', qty: 1 }] });
+    assert.equal((await stockOf(HENRY)).L, start - 1);
+    assert.deepEqual(await store.deleteOrder(id), { number: 1, restocked: true });
+    assert.equal(await store.getOrder(id), null);
+    assert.equal((await stockOf(HENRY)).L, start);
+    await assert.rejects(store.deleteOrder(id), /not found/);
+  });
+
+  test('a cancelled order does not return its stock a second time', async () => {
+    const start = (await stockOf(HENRY)).L;
+    const { id } = await store.createManualOrder({ customer: { name: 'Buyer' }, items: [{ slug: HENRY, size: 'L', qty: 1 }] });
+    await store.updateOrder(id, { status: 'cancelled' });
+    assert.equal((await store.deleteOrder(id)).restocked, false);
+    assert.equal((await stockOf(HENRY)).L, start);
+  });
+
+  test('cannot delete a checkout the customer could still pay for', async () => {
+    const order = await store.createPendingOrder([{ slug: HENRY, size: 'L', qty: 1 }], SETTINGS);
+    await assert.rejects(store.deleteOrder(order.id), /still at checkout/);
+    assert.equal((await store.getOrder(order.id)).status, 'pending');
+  });
+});
